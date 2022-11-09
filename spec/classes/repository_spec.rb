@@ -3,11 +3,9 @@
 require 'spec_helper'
 
 describe 'pgbackrest::repository' do
-  on_supported_os.each do |os, os_facts|
-    context "on #{os}" do
-      let(:facts) { os_facts }
+  _, os_facts = on_supported_os.first
 
-      it { is_expected.to compile }
-    end
-  end
+  let(:facts) { os_facts }
+
+  it { is_expected.to compile }
 end

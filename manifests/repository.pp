@@ -1,4 +1,4 @@
-# @summary Backup server repository
+# @summary PostgreSQL backups storage
 #
 # Configures pgBackRest backup server that can perform remote backups
 #
