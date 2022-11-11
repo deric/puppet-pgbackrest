@@ -8,7 +8,7 @@ describe 'pgbackrest::ssh_keygen' do
     filename = '/tmp/.sshgen/id_ed25519.pub'
     content = 'ssh-ed25519 AVeryDummyKey comment@host'
     # mock ssh key
-    allow(File).to receive(:exist?).with(filename).and_return(true)
+    allow(File).to receive(:exists?).with(filename).and_return(true)
     allow(File).to receive(:readlines).with(filename).and_return(StringIO.new(content))
 
     is_expected.to run.with_params(ENV['USER'], { 'dir' => '/tmp/.sshgen' })\

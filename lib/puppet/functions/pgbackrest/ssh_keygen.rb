@@ -76,7 +76,7 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
       if entry.name == username
         path = pubkey_file(entry.dir, config)
 
-        unless File.exist?(path)
+        unless File.exists?(path)
           generate_key(entry.name, path, config)
         end
         return fetch_key(path)
