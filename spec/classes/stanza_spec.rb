@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'fileutils'
 
 describe 'pgbackrest::stanza' do
   _, os_facts = on_supported_os.first
@@ -30,7 +31,7 @@ describe 'pgbackrest::stanza' do
 
     it {
       is_expected.to contain_postgresql__server__database('pgbackup').with(
-        {'owner' => 'pgbackrest'}
+        { 'owner' => 'pgbackrest' },
       )
     }
 
@@ -39,13 +40,83 @@ describe 'pgbackrest::stanza' do
         {
           'replication' => true,
           'superuser'   => false,
-        }
+        },
       )
     }
 
     it { is_expected.to contain_class('pgbackrest::grants') }
   end
 
+  context 'manage ssh keys' do
+    let(:params) do
+      {
+        backups: {
+          common: {
+            FULL: {},
+          },
+        },
+        id: 'psql',
+        port: 5433,
+        db_name: 'pg_db',
+        db_user:  'pg_user',
+        db_password: 'TopSecret!',
+      }
+    end
 
+    let(:params) do
+      {
+        ssh_key_config: {
+          'dir': '/tmp/.sshgen',
+          'type': 'ed25519',
+        },
+      }
+    end
 
+    let(:before) do
+      FileUtils.mkdir_p('/tmp/.sshgen')
+      File.write('/tmp/.sshgen/id_ed25519.pub', "ssh-ed25519 AVeryDummyKey comment@host\n")
+    end
+  end
+
+  context 'with plain text password' do
+    let(:params) do
+      {
+        backups: {
+          common: {
+            FULL: {},
+          },
+        },
+        id: 'psql',
+        port: 5433,
+        db_name: 'pg_db',
+        db_user:  'pg_user',
+        db_password: 'TopSecret!',
+      }
+    end
+
+    it {
+      expect(exported_resources).to contain_file_line('pgbackrest_pgpass_content-psql').with(
+        line: 'psql.localhost:5433:pg_db:pg_user:TopSecret!',
+      )
+    }
+  end
+
+  context 'exporting host ssh key' do
+    let(:params) do
+      {
+        id: 'psql',
+        manage_host_keys: true,
+        backup_dir: '/backup',
+      }
+    end
+
+    it {
+      expect(exported_resources).to contain_sshkey('postgres-psql.localhost').with(
+        ensure: 'present',
+        target: '/backup/.ssh/known_hosts',
+        key: 'AAAAE2VjZHNhLXNoYTBtbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHSTDlBLg+FouBL5gEmO1PYmVNbguoZ5ECdIG/Acwt9SylhSAqZSlKKFojY3XwcTvokz/zfeVPesnNnBVgFWmXU=',
+        tag: ['pgbackrest-common'],
+      )
+    }
+  end
 end

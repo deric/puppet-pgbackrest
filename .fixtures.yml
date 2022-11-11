@@ -6,4 +6,5 @@ fixtures:
     concat: puppetlabs/concat
     cron_core: puppetlabs/cron_core
     postgresql: puppetlabs/postgresql
+    sshkeys_core: puppetlabs/sshkeys_core
     stdlib: puppetlabs/stdlib
