@@ -56,15 +56,7 @@ describe 'pgbackrest::stanza' do
           },
         },
         id: 'psql',
-        port: 5433,
-        db_name: 'pg_db',
-        db_user:  'pg_user',
-        db_password: 'TopSecret!',
-      }
-    end
-
-    let(:params) do
-      {
+        manage_ssh_keys: true,
         ssh_key_config: {
           'dir': '/tmp/.sshgen',
           'type': 'ed25519',
@@ -72,10 +64,21 @@ describe 'pgbackrest::stanza' do
       }
     end
 
-    let(:before) do
-      FileUtils.mkdir_p('/tmp/.sshgen')
-      File.write('/tmp/.sshgen/id_ed25519.pub', "ssh-ed25519 AVeryDummyKey comment@host\n")
-    end
+    it {
+      filename = '/tmp/.sshgen/id_ed25519.pub'
+      content = 'ssh-ed25519 AVeryDummyKey comment@host'
+      # mock ssh key
+      allow(File).to receive(:exists?).with(filename).and_return(true)
+      allow(File).to receive(:readlines).with(filename).and_return(StringIO.new(content))
+
+      expect(exported_resources).to contain_ssh_authorized_key('postgres-psql.localhost')
+        .with(
+          user: 'postgres',
+          type: 'ssh-ed25519',
+          key: 'AVeryDummyKey',
+          tag: ['pgbackrest-common'],
+        )
+    }
   end
 
   context 'with plain text password' do
