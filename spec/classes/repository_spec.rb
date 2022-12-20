@@ -16,6 +16,14 @@ describe 'pgbackrest::repository' do
   it { is_expected.to contain_class('pgbackrest::install') }
 
 
+  it {
+    is_expected.to contain_file('/var/lib/pgbackrest')
+      .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup',
+            mode: '0750')
+  }
+
   context 'with manage_user: true' do
     let(:params) do
       {
@@ -26,7 +34,6 @@ describe 'pgbackrest::repository' do
     it { is_expected.to contain_user('pgbackup') }
     it { is_expected.to contain_group('pgbackup') }
   end
-
 
   context 'with log directory' do
     let(:params) do
