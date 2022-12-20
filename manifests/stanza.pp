@@ -46,26 +46,24 @@
 class pgbackrest::stanza (
   String                            $id                   = $facts['networking']['hostname'],
   Optional[String]                  $cluster              = undef,
-  String                            $host_group           = 'common',
+  String                            $host_group           = $pgbackrest::host_group,
   Integer[1,256]                    $repo                 = 1,
   String                            $address              = $facts['networking']['fqdn'],
   Integer                           $port                 = 5432,
-  String                            $db_name              = 'backup',
-  String                            $db_user              = 'backup',
+  String                            $db_name              = $pgbackrest::db_name,
+  String                            $db_user              = $pgbackrest::db_user,
   String                            $db_cluster           = 'main',
   Variant[String,Sensitive[String]] $db_password          = '',
   Optional[String]                  $seed                 = undef,
-  String                            $package_name         = 'pgbackrest',
-  String                            $package_ensure       = 'present',
   Boolean                           $manage_dbuser        = true,
-  Boolean                           $manage_ssh_keys      = false,
-  Boolean                           $manage_host_keys     = true,
-  Boolean                           $manage_pgpass        = true,
-  Boolean                           $manage_hba           = true,
-  Boolean                           $manage_cron          = true,
+  Boolean                           $manage_ssh_keys      = $pgbackrest::manage_ssh_keys,
+  Boolean                           $manage_host_keys     = $pgbackrest::manage_host_keys,
+  Boolean                           $manage_pgpass        = $pgbackrest::manage_pgpass,
+  Boolean                           $manage_hba           = $pgbackrest::manage_hba,
+  Boolean                           $manage_cron          = $pgbackrest::manage_cron,
   String                            $ssh_user             = 'postgres',
   Integer                           $ssh_port             = 22,
-  String                            $host_key_type        = 'ecdsa-sha2-nistp256',
+  String                            $host_key_type        = $pgbackrest::host_key_type,
   Hash                              $ssh_key_config       = {},
   Stdlib::AbsolutePath              $backup_dir           = '/var/lib/pgbackrest',
   Stdlib::AbsolutePath              $spool_dir            = '/var/spool/pgbackrest',
@@ -80,15 +78,10 @@ class pgbackrest::stanza (
   Optional[Integer]                 $archive_timeout      = undef,
   Optional[Stdlib::AbsolutePath]    $binary               = undef,
   Boolean                           $redirect_console     = false,
-) {
+) inherits pgbackrest {
   $_cluster = $cluster ? {
     undef   => $id,
     default => $cluster
-  }
-
-  class { 'pgbackrest::install':
-    package_name => $package_name,
-    ensure       => $package_ensure,
   }
 
   $_seed = $seed ? {
