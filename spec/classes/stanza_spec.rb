@@ -65,7 +65,7 @@ describe 'pgbackrest::stanza' do
       }
     end
 
-    before  do
+    before(:each) do
       filename = '/tmp/.sshgen/id_ed25519.pub'
       content = 'ssh-ed25519 AVeryDummyKey comment@host'
       FileUtils.mkdir_p '/tmp/.sshgen'
@@ -73,10 +73,6 @@ describe 'pgbackrest::stanza' do
     end
 
     it {
-      # mock ssh key
-      #allow(File).to receive(:exists?).with(filename).and_return(true)
-      #allow(File).to receive(:readlines).with(filename).and_return(StringIO.new(content))
-
       expect(exported_resources).to contain_ssh_authorized_key('postgres-psql.localhost')
         .with(
           user: 'postgres',
