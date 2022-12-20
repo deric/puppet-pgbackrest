@@ -15,7 +15,6 @@ describe 'pgbackrest::repository' do
 
   it { is_expected.to contain_class('pgbackrest::install') }
 
-
   it {
     is_expected.to contain_file('/var/lib/pgbackrest')
       .with(ensure: 'directory',
