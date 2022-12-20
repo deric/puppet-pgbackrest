@@ -41,12 +41,20 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
   end
 
   def fetch_key(path)
-    parse_ssh_key(File.readlines(path).string)
+    lines = File.readlines(path)
+    if lines.respond_to? :string
+      content = lines.string
+    elsif lines.respond_to? :join
+      content = lines.join('')
+    else
+      content = lines
+    end
+    parse_ssh_key(content)
   end
 
   def parse_ssh_key(str)
     matched = str.match(%r{((sk-ecdsa-|ssh-|ecdsa-)[^\s]+)\s+([^\s]+)\s+(.*)$})
-    raise ArgumentError, 'Wrong Keyline format!' unless matched && matched.length == 5
+    raise ArgumentError, "Wrong Keyline format: #{str}"  unless matched && matched.length == 5
     key = {
       'type' => matched[1],
       'key' => matched[3],

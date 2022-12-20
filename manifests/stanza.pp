@@ -8,6 +8,8 @@
 #   Cluster name in case database has primary and some replicas.
 # @param host_group
 #   Default repository host group
+# @param repo
+#   Set the repository for a command to operate on, default: 1
 # @param address
 # @param port
 # @param db_name
@@ -20,11 +22,24 @@
 # @param ssh_key_fact
 # @param backup_dir
 #   Directory where backups will be stored (might be located on remote server)
+#  Default: /var/lib/pgbackrest
+# @param spool_dir
+#  Path where transient data is stored (should be on local filesystem)
+#  Default: /var/spool/pgbackrest
 # @param backups
 # @param ssh_user
 #   user used for ssh connection to the DB instance
 # @param ssh_port
 #   ssh port used for connection to the DB instance from catalog server
+# @param log_level_console
+#   Logging level, default: 'warn'
+#   Possible values 'off', 'error', 'warn', 'info', 'detail', 'debug', 'trace'
+# @param archive_timeout
+#   Set maximum time, in seconds, to wait for each WAL segment to reach the pgBackRest archive repository
+# @param binary
+#   Full path to backup executable.
+# @param redirect_console
+#   Redirect console output to a log file (make sense especially with custom backup command)
 #
 # @example
 #   include pgbackrest::stanza
@@ -32,6 +47,7 @@ class pgbackrest::stanza (
   String                            $id                   = $facts['networking']['hostname'],
   Optional[String]                  $cluster              = undef,
   String                            $host_group           = 'common',
+  Integer[1,256]                    $repo                 = 1,
   String                            $address              = $facts['networking']['fqdn'],
   Integer                           $port                 = 5432,
   String                            $db_name              = 'backup',
@@ -52,7 +68,18 @@ class pgbackrest::stanza (
   String                            $host_key_type        = 'ecdsa-sha2-nistp256',
   Hash                              $ssh_key_config       = {},
   Stdlib::AbsolutePath              $backup_dir           = '/var/lib/pgbackrest',
+  Stdlib::AbsolutePath              $spool_dir            = '/var/spool/pgbackrest',
+  Stdlib::AbsolutePath              $log_dir              = '/var/log/pgbackrest',
+  String                            $backup_user          = 'pgbackup',
   Optional[Hash]                    $backups              = undef,
+  Pgbackrest::LogLevel              $log_level_console    = 'warn',
+  Pgbackrest::LogLevel              $log_level_file       = 'info',
+  Pgbackrest::CompressType          $compress_type        = 'gz',
+  Optional[Integer[0,9]]            $compress_level       = undef,
+  Optional[Integer[1,999]]          $process_max          = undef,
+  Optional[Integer]                 $archive_timeout      = undef,
+  Optional[Stdlib::AbsolutePath]    $binary               = undef,
+  Boolean                           $redirect_console     = false,
 ) {
   $_cluster = $cluster ? {
     undef   => $id,
@@ -146,5 +173,64 @@ class pgbackrest::stanza (
       match => "^${regexpescape($address)}:${port}:replication:${db_user}",
       tag   => $tags,
     }
+  }
+
+  if !empty($backups){
+    $backups.each |String $host_group, Hash $config| {
+
+      @@exec { "pgbackrest_stanza_create_${::fqdn}-${host_group}":
+        command => @("CMD"/L),
+        pgbackrest --stanza=${_cluster} --log-level-console=${log_level_console} stanza-create
+        | -CMD
+        path    => ['/usr/bin'],
+        cwd     => $backup_dir,
+        #onlyif  => "test ! -d ${backup_dir}/backups/${_cluster}",
+        tag     => "pgbackrest_stanza_create-${host_group}",
+        user    => $backup_user, # note: error output might not be captured
+        require => Package[$package_name],
+      }
+
+      # Collect resources exported by pgbackrest::repository
+      Postgresql::Server::Pg_hba_rule <<| tag == "pgbackrest-${host_group}" |>>
+
+      if $manage_ssh_keys {
+        # Import public key from backup server as authorized
+        Ssh_authorized_key <<| tag == "pgbackrest-repository-${host_group}" |>> {
+          require => Class['postgresql::server'],
+        }
+      }
+
+      if $manage_host_keys {
+        # Import backup server host key
+        Sshkey <<| tag == "pgbackrest-repository-${host_group}" |>>
+      }
+
+      if $manage_cron {
+
+          $config.each |$backup_type, $schedule| {
+          # declare cron job, use defaults from stanza
+          create_resources(pgbackrest::cron_backup, {"cron_backup-${host_group}-${address}-${backup_type}" => $schedule} , {
+            id                   => $id,
+            cluster              => $_cluster,
+            db_name              => $db_name,
+            db_user              => $db_user,
+            host_group           => $host_group,
+            backup_dir           => $backup_dir,
+            backup_type          => $backup_type,
+            backup_user          => $backup_user,
+            server_address       => $address,
+            process_max          => $process_max,
+            compress_type        => $compress_type,
+            compress_level       => $compress_level,
+            archive_timeout      => $archive_timeout,
+            log_dir              => $log_dir,
+            log_level_file       => $log_level_file,
+            log_level_console    => $log_level_console,
+            binary               => $binary,
+            redirect_console     => $redirect_console,
+          })
+        }
+      } # manage_cron
+    } # host_group
   }
 }

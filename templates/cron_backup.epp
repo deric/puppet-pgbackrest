@@ -1,0 +1,31 @@
+<%# Compose backup command -%>
+<% if $binary { -%>
+<%= $binary -%>
+<% } else { -%>
+<%= "/usr/bin/pgbackrest" -%>
+<% }  -%>
+<%= " backup -B ${backup_dir} --stanza=${cluster} --type=${backup_type}" -%>
+<%= " --pg-user ${db_user}" -%>
+<% if $process_max { -%>
+<%= " --process-max=${process_max}" -%>
+<% } -%>
+<%= " --compress-type=${compress_type} --compress-level=${compress_level}" -%>
+<% if $archive_timeout { -%>
+<%= " --archive-timeout=${archive_timeout}" -%>
+<% } -%>
+<% if $log_level_file { -%>
+<%= " --log-level-file=${log_level_file}" -%>
+<% } -%>
+<% if $log_level_console { -%>
+<%= " --log-level-console=${log_level_console}" -%>
+<% } -%>
+<% if $log_dir { -%>
+<%= " --log-path=${log_dir}" -%>
+<% } -%>
+<% if $redirect_console { -%>
+<%   if $log_console { -%>
+<%= " >> ${log_dir}/${log_console} 2>&1" -%>
+<%   } else { -%>
+<%= " >> ${log_dir}/${cluster}.log 2>&1" -%>
+<%   }-%>
+<% }-%>
