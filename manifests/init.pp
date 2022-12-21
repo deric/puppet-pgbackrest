@@ -2,6 +2,9 @@
 #
 # Namespace for shared parameters.
 #
+# @param backup_user
+#   Unix account used (mainly) for storing backups
+#
 # @example In order to disable ssh keys management on both stanza (db server) and repository (backup server)
 #   pgbackrest::manage_ssh_key: false
 #
@@ -19,6 +22,8 @@ class pgbackrest(
   String               $db_name = 'backup',
   String               $db_user = 'backup',
   String               $ssh_user = 'postgres',
+  String               $backup_user = 'backup',
+  String               $backup_group = 'backup',
   Stdlib::AbsolutePath $backup_dir = '/var/lib/pgbackrest',
   Stdlib::AbsolutePath $log_dir = '/var/log/pgbackrest',
   Stdlib::AbsolutePath $spool_dir = '/var/spool/pgbackrest',
