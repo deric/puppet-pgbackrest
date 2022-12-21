@@ -18,15 +18,20 @@ describe 'pgbackrest::repository' do
   it {
     is_expected.to contain_file('/var/lib/pgbackrest')
       .with(ensure: 'directory',
-            owner: 'pgbackup',
-            group: 'pgbackup',
+            owner: 'backup',
+            group: 'backup',
             mode: '0750')
   }
+
+  it { is_expected.to contain_user('backup') }
+  it { is_expected.to contain_group('backup') }
 
   context 'with manage_user: true' do
     let(:params) do
       {
         manage_user: true,
+        user: 'pgbackup',
+        group: 'pgbackup',
       }
     end
 
@@ -38,12 +43,33 @@ describe 'pgbackrest::repository' do
     let(:params) do
       {
         log_dir: '/var/log/pgbackrest',
+        user: 'pgbackup',
+        group: 'pgbackup',
+        manage_dirs: true,
       }
     end
 
     it {
       is_expected.to contain_file('/var/log/pgbackrest')
         .with(ensure: 'directory',
+              owner: 'pgbackup',
+              group: 'pgbackup')
+    }
+  end
+
+  context 'with manage_config' do
+    let(:params) do
+      {
+        manage_config: true,
+        config_file: '/etc/pgbackrest.conf',
+        user: 'pgbackup',
+        group: 'pgbackup',
+      }
+    end
+
+    it {
+      is_expected.to contain_file('/etc/pgbackrest.conf')
+        .with(ensure: 'file',
               owner: 'pgbackup',
               group: 'pgbackup')
     }

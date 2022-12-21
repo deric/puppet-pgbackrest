@@ -22,8 +22,8 @@ class pgbackrest::repository(
   String                          $dir_mode = '0750',
   Optional[Stdlib::AbsolutePath]  $log_dir = $pgbackrest::log_dir,
   String                          $exported_ipaddress = "${::ipaddress}/32",
-  String                          $user = 'pgbackup',
-  String                          $group = 'pgbackup',
+  String                          $user = 'backup',
+  String                          $group = 'backup',
   Enum['present', 'absent']       $user_ensure = 'present',
   String                          $user_shell = '/bin/bash',
   String                          $host_key_type = $pgbackrest::host_key_type,
@@ -34,8 +34,10 @@ class pgbackrest::repository(
   Boolean                         $manage_cron = $pgbackrest::manage_cron,
   Boolean                         $manage_dirs = true,
   Boolean                         $manage_user = true,
+  Boolean                         $manage_config = true,
   Boolean                         $purge_cron = false,
   Optional[Integer]               $uid = undef,
+  Stdlib::AbsolutePath            $config_file = '/etc/pgbackrest.conf',
   String                          $host_group = $pgbackrest::host_group,
   Integer                         $hba_entry_order = 50,
   String                          $db_name = $pgbackrest::db_name,
@@ -59,13 +61,20 @@ class pgbackrest::repository(
     }
   }
 
+  if $manage_config {
+    file { $config_file:
+      ensure  => file,
+      owner   => $user,
+      group   => $group,
+    }
+  }
+
   if $manage_dirs {
     file { $backup_dir:
       ensure  => directory,
       owner   => $user,
       group   => $group,
       mode    => $dir_mode,
-      require => User[$user],
     }
 
     file { $spool_dir:
@@ -73,7 +82,6 @@ class pgbackrest::repository(
       owner   => $user,
       group   => $group,
       mode    => $dir_mode,
-      require => User[$user],
     }
 
     if $log_dir {

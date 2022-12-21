@@ -68,7 +68,7 @@ class pgbackrest::stanza (
   Stdlib::AbsolutePath              $backup_dir           = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath              $spool_dir            = $pgbackrest::spool_dir,
   Stdlib::AbsolutePath              $log_dir              = $pgbackrest::log_dir,
-  String                            $backup_user          = 'pgbackup',
+  String                            $backup_user          = 'backup',
   Optional[Hash]                    $backups              = undef,
   Pgbackrest::LogLevel              $log_level_console    = 'warn',
   Pgbackrest::LogLevel              $log_level_file       = 'info',
