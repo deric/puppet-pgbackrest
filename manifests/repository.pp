@@ -8,7 +8,8 @@
 #   Local user account used for running and storing backups in its home dir.
 # @param group
 #   Primary group of backup user
-
+# @param purge_cron
+#   Remove cron jobs not managed by Puppet
 #
 # @example
 #   include pgbackrest::repository
@@ -29,7 +30,7 @@ class pgbackrest::repository(
   Boolean                         $manage_hba = $pgbackrest::manage_hba,
   Boolean                         $manage_cron = $pgbackrest::manage_cron,
   Boolean                         $manage_user = true,
-  Boolean                         $purge_cron = true,
+  Boolean                         $purge_cron = false,
   Optional[Integer]               $uid = undef,
   String                          $host_group = $pgbackrest::host_group,
   Integer                         $hba_entry_order = 50,
@@ -166,9 +167,11 @@ class pgbackrest::repository(
     # Collect backup jobs to run
     Cron <<| tag == "pgbackrest-${host_group}" |>>
 
-    # When enabled e.g. old entries will be removed
-    resources { 'cron':
-      purge => $purge_cron,
+    if $purge_cron {
+      # When enabled e.g. old entries will be removed
+      resources { 'cron':
+        purge => $purge_cron,
+      }
     }
   }
 
