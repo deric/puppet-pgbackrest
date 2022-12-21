@@ -14,6 +14,8 @@
 # @param port
 # @param db_name
 # @param db_user
+# @param db_path
+#   Typically postgres home directory
 # @param db_cluster
 #   PostgreSQL cluster name, default: main
 # @param db_password
@@ -53,6 +55,8 @@ class pgbackrest::stanza (
   String                            $db_name              = $pgbackrest::db_name,
   String                            $db_user              = $pgbackrest::db_user,
   String                            $db_cluster           = 'main',
+  String                            $version              = lookup('postgresql::globals::version'),
+  Stdlib::AbsolutePath              $db_path              = '/var/lib/postgresql',
   Variant[String,Sensitive[String]] $db_password          = '',
   Optional[String]                  $seed                 = undef,
   Boolean                           $manage_dbuser        = true,
@@ -171,9 +175,10 @@ class pgbackrest::stanza (
   if !empty($backups){
     $backups.each |String $host_group, Hash $config| {
 
-      @@exec { "pgbackrest_stanza_create_${::fqdn}-${host_group}":
+      @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
         command => @("CMD"/L),
-        pgbackrest --stanza=${_cluster} --log-level-console=${log_level_console} stanza-create
+        pgbackrest stanza-create --stanza=${_cluster} --log-level-console=${log_level_console}
+        --pg1-host=${address} --pg1-path=${db_path}/${version}/${db_cluster} --pg1-port=${port}
         | -CMD
         path    => ['/usr/bin'],
         cwd     => $backup_dir,

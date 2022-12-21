@@ -13,6 +13,12 @@ describe 'pgbackrest::stanza' do
     'include postgresql::server'
   end
 
+  let(:params) do
+    {
+      version: '14',
+    }
+  end
+
   it { is_expected.to compile }
 
   it {
@@ -27,6 +33,7 @@ describe 'pgbackrest::stanza' do
         manage_dbuser: true,
         db_user: 'pgbackrest',
         db_name: 'pgbackup',
+        version: '14',
       }
     end
 
@@ -62,6 +69,7 @@ describe 'pgbackrest::stanza' do
           'dir': '/tmp/.sshgen',
           'type': 'ed25519',
         },
+        version: '14',
       }
     end
 
@@ -96,6 +104,7 @@ describe 'pgbackrest::stanza' do
         db_name: 'pg_db',
         db_user:  'pg_user',
         db_password: 'TopSecret!',
+        version: '14',
       }
     end
 
@@ -112,6 +121,7 @@ describe 'pgbackrest::stanza' do
         id: 'psql',
         manage_host_keys: true,
         backup_dir: '/backup',
+        version: '14',
       }
     end
 
