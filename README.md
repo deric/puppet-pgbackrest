@@ -30,3 +30,8 @@ On storage (backup) server:
 ```puppet
 include pgbackrest::repository
 ```
+
+
+## Common params
+
+- `pgbackrest::backup_dir` directory where backups will be stored

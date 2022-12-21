@@ -15,7 +15,7 @@
 #   include pgbackrest::repository
 class pgbackrest::repository(
   Integer $id = 1,
-  Stdlib::AbsolutePath            $backup_dir = '/var/lib/pgbackrest',
+  Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
   String                          $dir_mode = '0750',
   Optional[Stdlib::AbsolutePath]  $log_dir = undef,
   String                          $exported_ipaddress = "${::ipaddress}/32",
