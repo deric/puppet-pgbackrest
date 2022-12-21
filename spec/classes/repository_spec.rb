@@ -73,5 +73,7 @@ describe 'pgbackrest::repository' do
               owner: 'pgbackup',
               group: 'pgbackup')
     }
+
+    it { is_expected.to contain_class('pgbackrest::config') }
   end
 end

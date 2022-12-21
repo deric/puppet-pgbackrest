@@ -16,7 +16,6 @@
 # @example
 #   include pgbackrest::repository
 class pgbackrest::repository(
-  Integer $id = 1,
   Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
   String                          $dir_mode = '0750',
@@ -44,6 +43,7 @@ class pgbackrest::repository(
   String                          $db_user = $pgbackrest::db_user,
   String                          $ssh_user = $pgbackrest::ssh_user,
   Hash                            $ssh_key_config = {},
+  Hash                            $config = {},
   ) inherits pgbackrest {
 
   if $manage_user {
@@ -62,10 +62,11 @@ class pgbackrest::repository(
   }
 
   if $manage_config {
-    file { $config_file:
-      ensure  => file,
-      owner   => $user,
-      group   => $group,
+    class { 'pgbackrest::config':
+      config_file => $config_file,
+      user        => $user,
+      group       => $group,
+      config      => $config,
     }
   }
 
