@@ -3,10 +3,13 @@
 require 'spec_helper'
 
 describe 'pgbackrest::cron_backup' do
-  let(:title) { 'namevar' }
+  _, os_facts = on_supported_os.first
+  let(:title) { 'psql' }
+  let(:facts) { os_facts }
   let(:params) do
     {
       id: 'psql01a',
+      repo: 1,
       cluster: 'psql01',
       host_group: 'common',
       backup_type: 'incr',
@@ -18,11 +21,15 @@ describe 'pgbackrest::cron_backup' do
     }
   end
 
-  on_supported_os.each do |os, os_facts|
-    context "on #{os}" do
-      let(:facts) { os_facts }
+  it { is_expected.to compile }
 
-      it { is_expected.to compile }
-    end
-  end
+  it {
+    expect(exported_resources).to contain_cron('pgbackrest_incr_localhost-common')
+      .with(
+        user: 'pgbackup',
+        weekday: '*',
+        hour: '4',
+        minute: '0',
+      )
+  }
 end

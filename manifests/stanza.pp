@@ -204,6 +204,7 @@ class pgbackrest::stanza (
           # declare cron job, use defaults from stanza
           create_resources(pgbackrest::cron_backup, {"cron_backup-${host_group}-${address}-${backup_type}" => $schedule} , {
             id                   => $id,
+            repo                 => $repo,
             cluster              => $_cluster,
             db_name              => $db_name,
             db_user              => $db_user,
