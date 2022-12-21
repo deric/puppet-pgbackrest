@@ -16,8 +16,9 @@
 class pgbackrest::repository(
   Integer $id = 1,
   Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
+  Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
   String                          $dir_mode = '0750',
-  Optional[Stdlib::AbsolutePath]  $log_dir = undef,
+  Optional[Stdlib::AbsolutePath]  $log_dir = $pgbackrest::log_dir,
   String                          $exported_ipaddress = "${::ipaddress}/32",
   String                          $user = 'pgbackup',
   String                          $group = 'pgbackup',
@@ -56,6 +57,14 @@ class pgbackrest::repository(
   }
 
   file { $backup_dir:
+    ensure  => directory,
+    owner   => $user,
+    group   => $group,
+    mode    => $dir_mode,
+    require => User[$user],
+  }
+
+  file { $spool_dir:
     ensure  => directory,
     owner   => $user,
     group   => $group,

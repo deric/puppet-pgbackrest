@@ -20,6 +20,8 @@ class pgbackrest(
   String               $db_user = 'backup',
   String               $ssh_user = 'postgres',
   Stdlib::AbsolutePath $backup_dir = '/var/lib/pgbackrest',
+  Stdlib::AbsolutePath $log_dir = '/var/log/pgbackrest',
+  Stdlib::AbsolutePath $spool_dir = '/var/spool/pgbackrest',
   ) {
 
   class { 'pgbackrest::install':
