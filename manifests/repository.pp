@@ -10,6 +10,8 @@
 #   Primary group of backup user
 # @param purge_cron
 #   Remove cron jobs not managed by Puppet
+# @param manage_dirs
+#   Whether directories should be managed by Puppet
 #
 # @example
 #   include pgbackrest::repository
@@ -30,6 +32,7 @@ class pgbackrest::repository(
   Boolean                         $manage_pgpass = $pgbackrest::manage_pgpass,
   Boolean                         $manage_hba = $pgbackrest::manage_hba,
   Boolean                         $manage_cron = $pgbackrest::manage_cron,
+  Boolean                         $manage_dirs = true,
   Boolean                         $manage_user = true,
   Boolean                         $purge_cron = false,
   Optional[Integer]               $uid = undef,
@@ -56,27 +59,29 @@ class pgbackrest::repository(
     }
   }
 
-  file { $backup_dir:
-    ensure  => directory,
-    owner   => $user,
-    group   => $group,
-    mode    => $dir_mode,
-    require => User[$user],
-  }
+  if $manage_dirs {
+    file { $backup_dir:
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+      mode    => $dir_mode,
+      require => User[$user],
+    }
 
-  file { $spool_dir:
-    ensure  => directory,
-    owner   => $user,
-    group   => $group,
-    mode    => $dir_mode,
-    require => User[$user],
-  }
+    file { $spool_dir:
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+      mode    => $dir_mode,
+      require => User[$user],
+    }
 
-  if $log_dir {
-    file { $log_dir:
-      ensure => directory,
-      owner  => $user,
-      group  => $group,
+    if $log_dir {
+      file { $log_dir:
+        ensure => directory,
+        owner  => $user,
+        group  => $group,
+      }
     }
   }
 
