@@ -190,8 +190,8 @@ class pgbackrest::repository(
     @@ssh_authorized_key { "pgbackrest-${fqdn}":
       ensure => present,
       user   => $ssh_user,
-      type   => Deferred('inline_epp', ['<%= $value -%>', {'value' => $auth_type}]),
-      key    => Deferred('inline_epp', ['<%= $value -%>', {'value' => $auth_key}]),
+      type   => Deferred('sprintf', ['%s', $auth_type]),
+      key    => Deferred('sprintf', ['%s', $auth_key]),
       tag    => "pgbackrest-repository-${host_group}",
     }
   }
