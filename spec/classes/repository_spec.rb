@@ -121,25 +121,17 @@ describe 'pgbackrest::repository' do
         manage_host_keys: true,
         user: 'pgbackup',
         group: 'pgbackup',
-        backup_dir: '/tmp/pgbackrest',
-        ssh_key_config: { 'type' => 'rsa' },
+        backup_dir: '/var/lib/pgbackrest',
+        ssh_key_type: 'ed25519',
       }
-    end
-    let(:backup_home) { '/tmp/pgbackrest' }
-
-    before(:each) do
-      filename = "#{backup_home}/.ssh/id_rsa.pub"
-      content = 'ssh-rsa ASlightlyDummyRSAKey comment@host'
-      FileUtils.mkdir_p "#{backup_home}/.ssh"
-      File.write(filename, content)
     end
 
     it 'exports public ssh key' do
       expect(exported_resources).to contain_ssh_authorized_key('pgbackrest-psql.localhost')
         .with(
           user: 'postgres',
-          type: 'ssh-rsa',
-          key: 'ASlightlyDummyRSAKey',
+          type: 'ssh-ed25519',
+          key: 'AAAAC3NzaC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
         )
     end
 
@@ -150,10 +142,6 @@ describe 'pgbackrest::repository' do
         key: 'AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBK0I9tmr+wzrGKYmc5aaI07KpRfxCM+eDjtFfguCD7hKeD3LOD5IO6irhYtjABBfZCJmTCs0U68Bc8LkHCAWvYw=',
         tag: ['pgbackrest-repository-common'],
       )
-    end
-
-    after(:each) do
-      FileUtils.rm_rf backup_home
     end
   end
 end

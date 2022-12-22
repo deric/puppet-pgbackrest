@@ -9,21 +9,21 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_key_path") do
     return_type 'String'
   end
 
-  def ssh_key_path(dir, ssh_type='ed25519', pubkey=true)
+  def ssh_key_path(dir, ssh_type = 'ed25519', pubkey = true)
     key = case ssh_type
-             when 'dsa'
-               'id_dsa'
-             when 'rsa'
-               'id_rsa'
-             when 'ecdsa'
-               'id_ecdsa'
-             when 'ecdsa-sk'
-               'id_ecdsa_sk'
-             when 'ed25519'
-               'id_ed25519'
-             when 'ed25519-sk'
-               'id_ed25519_sk'
-             end
+          when 'dsa'
+            'id_dsa'
+          when 'rsa'
+            'id_rsa'
+          when 'ecdsa'
+            'id_ecdsa'
+          when 'ecdsa-sk'
+            'id_ecdsa_sk'
+          when 'ed25519'
+            'id_ed25519'
+          when 'ed25519-sk'
+            'id_ed25519_sk'
+          end
 
     path = "#{dir}/#{key}"
     path = "#{path}.pub" if pubkey
