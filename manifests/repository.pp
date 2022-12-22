@@ -45,7 +45,6 @@ class pgbackrest::repository(
   String                          $ssh_user = $pgbackrest::ssh_user,
   Hash                            $ssh_key_config = {},
   Hash                            $config = {},
-  Boolean                         $defer_ssh_keys = true,
   ) inherits pgbackrest {
 
   if $manage_user {
@@ -190,8 +189,8 @@ class pgbackrest::repository(
     @@ssh_authorized_key { "pgbackrest-${fqdn}":
       ensure => present,
       user   => $ssh_user,
-      type   => Deferred('sprintf', ['%s', $auth_type]),
-      key    => Deferred('sprintf', ['%s', $auth_key]),
+      type   => call(Deferred('sprintf', ['%s', $auth_type])),
+      key    => call(Deferred('sprintf', ['%s', $auth_key])),
       tag    => "pgbackrest-repository-${host_group}",
     }
   }

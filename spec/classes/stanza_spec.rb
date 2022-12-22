@@ -66,7 +66,6 @@ describe 'pgbackrest::stanza' do
         },
         version: '14',
         db_path: '/tmp/psql',
-        defer_ssh_keys: false,
       }
     end
 

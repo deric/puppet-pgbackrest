@@ -82,7 +82,6 @@ class pgbackrest::stanza (
   Optional[Integer]                 $archive_timeout      = undef,
   Optional[Stdlib::AbsolutePath]    $binary               = undef,
   Boolean                           $redirect_console     = false,
-  Boolean                           $defer_ssh_keys       = true,
 ) inherits pgbackrest {
   $_cluster = $cluster ? {
     undef   => $id,
@@ -150,11 +149,15 @@ class pgbackrest::stanza (
     $auth_key = Deferred('pgbackrest::ssh_keygen', [$ssh_user, "${db_path}/.ssh", $ssh_key_config, 'key'])
     $auth_type = Deferred('pgbackrest::ssh_keygen', [$ssh_user, "${db_path}/.ssh", $ssh_key_config, 'type'])
 
+    notify{ "ssh key":
+      message => Deferred('sprintf', ['%s', $auth_key])
+    }
+
     @@ssh_authorized_key { "${ssh_user}-${facts['networking']['fqdn']}":
       ensure => present,
       user   => $ssh_user,
-      type   => Deferred('sprintf', ['%s', $auth_type]),
-      key    => Deferred('sprintf', ['%s', $auth_key]),
+      type   => call(Deferred('sprintf', ['%s', $auth_type])),
+      key    => call(Deferred('sprintf', ['%s', $auth_key])),
       tag    => $tags,
     }
   }
