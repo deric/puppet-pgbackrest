@@ -72,7 +72,9 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
   # Generate ssh key
   def generate_key(user, path, config)
     private_path = path.delete_suffix('.pub')
+    puts "private key: #{private_path}"
     return if File.exist?(private_path)
+    puts "exec: ssh-keygen -t #{ssh_key_type(config)} -q -N '' -f #{private_path}"
     Facter::Util::Resolution.exec("su - #{user} -c \"ssh-keygen -t #{ssh_key_type(config)} -q -N '' -f #{private_path}\"")
   end
 
@@ -80,6 +82,7 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
     unless File.exist?(path)
       generate_key(username, path, config)
     end
+    puts "fetching key #{path}"
     fetch_key(path)
   end
 
