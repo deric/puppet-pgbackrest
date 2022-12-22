@@ -2,8 +2,7 @@
 
 Puppet module for managing PostgreSQL backups using `pgBackRest`.
 
-
-## Usage
+## Basic Usage
 
 On database server
 ```puppet
@@ -13,7 +12,7 @@ configure backups schedule:
 
 ```yaml
 pgbackrest::stanza::backups:
-  eu-west-01: # host_group name
+  eu-west: # host_group name
     incr:
       hour: 3
       minute: 50
@@ -24,13 +23,26 @@ pgbackrest::stanza::backups:
       weekday: 2 # Tuesday full backup
 ```
 
-
 On storage (backup) server:
 
 ```puppet
 include pgbackrest::repository
 ```
 
+## How Does This Work
+
+### pgbackrest::stanza
+
+Should be included on a database server.
+
+- Exports public ssh key (only if `pgbackrest::manage_ssh_keys: true`), default: `false`
+- Exports host ssh key (only if `pgbackrest::manage_host_keys: true`), default: `true`
+
+### pgbackrest::repository
+
+Repository is a server where backups are stored (though could be located on the same server).
+
+-
 
 ## Common params
 

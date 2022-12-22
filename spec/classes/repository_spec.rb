@@ -91,7 +91,8 @@ describe 'pgbackrest::repository' do
           ensure: 'present', section: 'global',
           setting: 'log-path', value: '/backup/log',
           path: '/etc/pgbackrest.conf'
-        })
+        },
+      )
     }
 
     it {
@@ -100,7 +101,8 @@ describe 'pgbackrest::repository' do
           ensure: 'present', section: 'global',
           setting: 'spool-path', value: '/backup/spool',
           path: '/etc/pgbackrest.conf'
-        })
+        },
+      )
     }
   end
 end
