@@ -177,8 +177,9 @@ class pgbackrest::stanza (
 
       @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
         command => @("CMD"/L),
-        pgbackrest stanza-create --stanza=${_cluster} --log-level-console=${log_level_console} \
-        --pg1-host=${address} --pg1-path=${db_path}/${version}/${db_cluster} --pg1-port=${port}
+        pgbackrest stanza-create --stanza=${_cluster} --log-level-console=${log_level_console}\
+        --pg1-host=${address} --pg1-path=${db_path}/${version}/${db_cluster} --pg1-port=${port}\
+        --pg1-user=${db_user}
         | -CMD
         path    => ['/usr/bin'],
         cwd     => $backup_dir,

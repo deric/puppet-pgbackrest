@@ -2,9 +2,9 @@
   "name": "deric-pgbackrest",
   "version": "0.1.0",
   "author": "Tomas Barton",
-  "summary": "",
+  "summary": "Manage PostgreSQL backups using pgBackRest",
   "license": "Apache-2.0",
-  "source": "",
+  "source": "https://github.com/deric/puppet-pgbackrest",
   "dependencies": [
     {
       "name": "puppetlabs/postgresql",
@@ -17,6 +17,10 @@
     {
       "name": "puppetlabs/stdlib",
       "version_requirement": ">= 2.3.3 < 9.0.0"
+    },
+    {
+      "name": "puppetlabs/inifile",
+      "version_requirement": ">= 4.0.0 < 6.0.0"
     }
   ],
   "operatingsystem_support": [

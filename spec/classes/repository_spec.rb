@@ -64,6 +64,8 @@ describe 'pgbackrest::repository' do
         config_file: '/etc/pgbackrest.conf',
         user: 'pgbackup',
         group: 'pgbackup',
+        log_dir: '/backup/log',
+        spool_dir: '/backup/spool',
       }
     end
 
@@ -75,5 +77,30 @@ describe 'pgbackrest::repository' do
     }
 
     it { is_expected.to contain_class('pgbackrest::config') }
+
+    it {
+      is_expected.to contain_file('/backup/log')
+        .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup')
+    }
+
+    it {
+      is_expected.to contain_ini_setting('global log-path').with(
+        {
+          ensure: 'present', section: 'global',
+          setting: 'log-path', value: '/backup/log',
+          path: '/etc/pgbackrest.conf'
+        })
+    }
+
+    it {
+      is_expected.to contain_ini_setting('global spool-path').with(
+        {
+          ensure: 'present', section: 'global',
+          setting: 'spool-path', value: '/backup/spool',
+          path: '/etc/pgbackrest.conf'
+        })
+    }
   end
 end

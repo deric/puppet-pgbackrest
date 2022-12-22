@@ -5,6 +5,11 @@ fixtures:
   forge_modules:
     concat: puppetlabs/concat
     cron_core: puppetlabs/cron_core
-    postgresql: puppetlabs/postgresql
+    postgresql:
+      repo: puppetlabs/postgresql
+      ref: 8.2.1
     sshkeys_core: puppetlabs/sshkeys_core
     stdlib: puppetlabs/stdlib
+    inifile:
+      repo: puppetlabs/inifile
+      ref: 5.4.0

@@ -19,7 +19,7 @@ class pgbackrest::repository(
   Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
   String                          $dir_mode = '0750',
-  Optional[Stdlib::AbsolutePath]  $log_dir = $pgbackrest::log_dir,
+  Stdlib::AbsolutePath            $log_dir = $pgbackrest::log_dir,
   String                          $exported_ipaddress = "${::ipaddress}/32",
   String                          $user = $pgbackrest::backup_user,
   String                          $group = $pgbackrest::backup_group,
@@ -62,11 +62,18 @@ class pgbackrest::repository(
   }
 
   if $manage_config {
+    $_config = merge($config, {
+        'global' => {
+          'log-path' => $log_dir,
+          'spool-path' => $spool_dir,
+        }
+      })
+
     class { 'pgbackrest::config':
       config_file => $config_file,
       user        => $user,
       group       => $group,
-      config      => $config,
+      config      => $_config,
     }
   }
 
@@ -85,12 +92,10 @@ class pgbackrest::repository(
       mode    => $dir_mode,
     }
 
-    if $log_dir {
-      file { $log_dir:
-        ensure => directory,
-        owner  => $user,
-        group  => $group,
-      }
+    file { $log_dir:
+      ensure => directory,
+      owner  => $user,
+      group  => $group,
     }
   }
 
