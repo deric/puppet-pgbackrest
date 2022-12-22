@@ -9,7 +9,9 @@ fixtures:
       repo: puppetlabs/postgresql
       ref: 8.2.1
     sshkeys_core: puppetlabs/sshkeys_core
-    stdlib: puppetlabs/stdlib
+    stdlib:
+      repo: puppetlabs/stdlib
+      ref: 8.5.0
     inifile:
       repo: puppetlabs/inifile
       ref: 5.4.0
