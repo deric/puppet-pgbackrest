@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'facter'
+require 'puppet'
+
 # https://github.com/puppetlabs/puppet-specifications/blob/master/language/func-api.md#the-4x-api
 #
 #  username
@@ -75,7 +76,7 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
     puts "private key: #{private_path}"
     return if File.exist?(private_path)
     puts "exec: ssh-keygen -t #{ssh_key_type(config)} -q -N '' -f #{private_path}"
-    Facter::Util::Resolution.exec("su - #{user} -c \"ssh-keygen -t #{ssh_key_type(config)} -q -N '' -f #{private_path}\"")
+    Puppet::Util::Execution.execute("su - #{user} -c \"ssh-keygen -t #{ssh_key_type(config)} -q -N '' -f #{private_path}\"")
   end
 
   def fetch_or_generate(username, path, config)

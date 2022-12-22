@@ -45,6 +45,7 @@ class pgbackrest::repository(
   String                          $ssh_user = $pgbackrest::ssh_user,
   Hash                            $ssh_key_config = {},
   Hash                            $config = {},
+  Boolean                         $defer_ssh_keys = true,
   ) inherits pgbackrest {
 
   if $manage_user {
@@ -182,7 +183,14 @@ class pgbackrest::repository(
   # to all DB instances in host_group.
   if $manage_ssh_keys {
     # Load or generate ssh public and private key for given local user
-    $ssh_key = pgbackrest::ssh_keygen($user, "${backup_dir}/.ssh", $ssh_key_config)
+    # Delay function execution, the function needs to be called on database node, not on a compile server
+    if $defer_ssh_keys {
+      $ssh_key = Deferred('pgbackrest::ssh_keygen', [$user, "${backup_dir}/.ssh", $ssh_key_config])
+    } else {
+      # evaluate immediately
+      $ssh_key = pgbackrest::ssh_keygen($user, "${backup_dir}/.ssh", $ssh_key_config)
+    }
+
     @@ssh_authorized_key { "pgbackrest-${fqdn}":
       ensure => present,
       user   => $ssh_user,

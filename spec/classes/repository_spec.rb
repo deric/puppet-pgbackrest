@@ -123,6 +123,7 @@ describe 'pgbackrest::repository' do
         group: 'pgbackup',
         backup_dir: '/tmp/pgbackrest',
         ssh_key_config: { 'type' => 'rsa' },
+        defer_ssh_keys: false,
       }
     end
     let(:backup_home) { '/tmp/pgbackrest' }

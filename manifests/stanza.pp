@@ -82,6 +82,7 @@ class pgbackrest::stanza (
   Optional[Integer]                 $archive_timeout      = undef,
   Optional[Stdlib::AbsolutePath]    $binary               = undef,
   Boolean                           $redirect_console     = false,
+  Boolean                           $defer_ssh_keys = true,
 ) inherits pgbackrest {
   $_cluster = $cluster ? {
     undef   => $id,
@@ -145,7 +146,14 @@ class pgbackrest::stanza (
 
   if $manage_ssh_keys {
     # Load or generate ssh public and private key for given user
-    $ssh_key = pgbackrest::ssh_keygen($ssh_user, "${db_path}/.ssh", $ssh_key_config)
+    # Delay function execution, the function needs to be called on database node, not on a compile server
+    if $defer_ssh_keys {
+      $ssh_key = Deferred('pgbackrest::ssh_keygen', [$ssh_user, "${db_path}/.ssh", $ssh_key_config])
+    } else {
+      # evaluate immediately
+      $ssh_key = pgbackrest::ssh_keygen($ssh_user, "${db_path}/.ssh", $ssh_key_config)
+    }
+
     @@ssh_authorized_key { "${ssh_user}-${facts['networking']['fqdn']}":
       ensure => present,
       user   => $ssh_user,
