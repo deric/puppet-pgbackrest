@@ -25,7 +25,7 @@ describe 'pgbackrest::ssh_keygen' do
     FileUtils.mkdir_p '/tmp/.sshgen'
     File.write(filename, content)
 
-    is_expected.to run.with_params(ENV['USER'], { 'dir' => '/tmp/.sshgen', 'type' => 'rsa'  })\
+    is_expected.to run.with_params(ENV['USER'], { 'dir' => '/tmp/.sshgen', 'type' => 'rsa' })\
                       .and_return(
         { 'type' => 'ssh-rsa', 'key' => 'AVeryRSAKey', 'comment' => 'comment@host' },
       )

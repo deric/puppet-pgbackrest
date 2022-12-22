@@ -6,3 +6,4 @@ networking:
 ssh:
   ecdsa:
     key: AAAAE2VjZHNhLXNoYTBtbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHSTDlBLg+FouBL5gEmO1PYmVNbguoZ5ECdIG/Acwt9SylhSAqZSlKKFojY3XwcTvokz/zfeVPesnNnBVgFWmXU=
+sshecdsakey: AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBK0I9tmr+wzrGKYmc5aaI07KpRfxCM+eDjtFfguCD7hKeD3LOD5IO6irhYtjABBfZCJmTCs0U68Bc8LkHCAWvYw=

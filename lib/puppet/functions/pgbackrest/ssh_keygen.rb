@@ -76,20 +76,27 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
 
   # Generate ssh key
   def generate_key(user, path, config)
-    puts("su - #{user} -c \"ssh-keygen -t #{ssh_key_type(config)} -P '' -f #{path}\"")
+    private_path = path.delete_suffix('.pub')
+    return if File.exist?(private_path)
+    system("su - #{user} -c \"ssh-keygen -t #{ssh_key_type(config)} -q -N '' -f #{private_path}\"")
+  end
+
+  def fetch_or_generate(username, path, config)
+    unless File.exist?(path)
+      generate_key(username, path, config)
+    end
+    fetch_key(path)
   end
 
   def ssh_keygen(username, config)
     Etc.passwd do |entry|
       if entry.name == username
         path = pubkey_file(entry.dir, config)
-
-        unless File.exist?(path)
-          generate_key(entry.name, path, config)
-        end
-        return fetch_key(path)
+        return fetch_or_generate(entry.name, path, config)
       end
     end
-    {}
+    # user has no passwd entry, relying on config[dir]
+    path = pubkey_file('', config)
+    fetch_or_generate(username, path, config)
   end
 end

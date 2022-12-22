@@ -16,6 +16,7 @@
 # @example
 #   include pgbackrest::repository
 class pgbackrest::repository(
+  String                          $fqdn = $facts['networking']['fqdn'],
   Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
   String                          $dir_mode = '0750',
@@ -141,13 +142,13 @@ class pgbackrest::repository(
     Sshkey <<| tag == "pgbackrest-${host_group}" |>>
 
     # Export catalog's host key
-    @@sshkey { "pgbackrest-repository-${::fqdn}":
+    @@sshkey { "pgbackrest-repository-${fqdn}":
       ensure       => present,
-      host_aliases => [$::hostname, $::fqdn, $::ipaddress],
+      host_aliases => [$::hostname, $fqdn, $::ipaddress],
       key          => $::sshecdsakey,
       type         => $host_key_type,
       target       => '/var/lib/postgresql/.ssh/known_hosts',
-      tag          => "pgprobackup-catalog-${host_group}",
+      tag          => "pgbackrest-repository-${host_group}",
     }
   }
 
@@ -180,9 +181,9 @@ class pgbackrest::repository(
   # Export (and add as authorized key) ssh key from pgbackup user
   # to all DB instances in host_group.
   if $manage_ssh_keys {
-    # Load or generate ssh public and private key for given user
-    $ssh_key = pgbackrest::ssh_keygen($ssh_user, $ssh_key_config)
-    @@ssh_authorized_key { "pgbackrest-${::fqdn}":
+    # Load or generate ssh public and private key for given local user
+    $ssh_key = pgbackrest::ssh_keygen($user, $ssh_key_config)
+    @@ssh_authorized_key { "pgbackrest-${fqdn}":
       ensure => present,
       user   => $ssh_user,
       type   => $ssh_key['type'],
