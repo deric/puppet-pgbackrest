@@ -15,7 +15,8 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
     param 'String', :username
     param 'String', :ssh_dir
     param 'Hash', :config
-    return_type 'Hash'
+    param 'String', :subkey
+    return_type 'String'
   end
 
   def pubkey_file(dir, config)
@@ -88,8 +89,9 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
     fetch_key(path)
   end
 
-  def ssh_keygen(username, ssh_dir, config = {})
+  def ssh_keygen(username, ssh_dir, config = {}, subkey = nil)
     path = pubkey_file(ssh_dir, config)
-    fetch_or_generate(username, path, config)
+    ret = fetch_or_generate(username, path, config)
+    ret[subkey]
   end
 end

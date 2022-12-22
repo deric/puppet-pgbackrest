@@ -11,10 +11,8 @@ describe 'pgbackrest::ssh_keygen' do
     allow(File).to receive(:exists?).with(filename).and_return(true)
     allow(File).to receive(:readlines).with(filename).and_return(StringIO.new(content))
 
-    is_expected.to run.with_params(ENV['USER'], '/tmp/.sshgen', {})\
-                      .and_return(
-        { 'type' => 'ssh-ed25519', 'key' => 'AVeryDummyKey', 'comment' => 'comment@host' },
-      )
+    is_expected.to run.with_params(ENV['USER'], '/tmp/.sshgen', {}, 'type')\
+                      .and_return('ssh-ed25519')
   end
 
   it { is_expected.to run.with_params(nil).and_raise_error(StandardError) }
@@ -25,10 +23,8 @@ describe 'pgbackrest::ssh_keygen' do
     FileUtils.mkdir_p '/tmp/.sshgen'
     File.write(filename, content)
 
-    is_expected.to run.with_params(ENV['USER'], '/tmp/.sshgen', { 'type' => 'rsa' })\
-                      .and_return(
-        { 'type' => 'ssh-rsa', 'key' => 'AVeryRSAKey', 'comment' => 'comment@host' },
-      )
+    is_expected.to run.with_params(ENV['USER'], '/tmp/.sshgen', { 'type' => 'rsa' }, 'key')\
+                      .and_return('AVeryRSAKey')
 
     File.delete(filename)
   end

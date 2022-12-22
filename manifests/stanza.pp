@@ -147,20 +147,14 @@ class pgbackrest::stanza (
   if $manage_ssh_keys {
     # Load or generate ssh public and private key for given user
     # Delay function execution, the function needs to be called on database node, not on a compile server
-    if $defer_ssh_keys {
-      $ssh_key = Deferred('pgbackrest::ssh_keygen', [$ssh_user, "${db_path}/.ssh", $ssh_key_config])
-    } else {
-      # evaluate immediately
-      $ssh_key = pgbackrest::ssh_keygen($ssh_user, "${db_path}/.ssh", $ssh_key_config)
-    }
-
-    notify {"ssh_key: ${ssh_key}": }
+    $auth_key = Deferred('pgbackrest::ssh_keygen', [$ssh_user, "${db_path}/.ssh", $ssh_key_config, 'key'])
+    $auth_type = Deferred('pgbackrest::ssh_keygen', [$ssh_user, "${db_path}/.ssh", $ssh_key_config, 'type'])
 
     @@ssh_authorized_key { "${ssh_user}-${facts['networking']['fqdn']}":
       ensure => present,
       user   => $ssh_user,
-      type   => unwrap($ssh_key)['type'],
-      key    => unwrap($ssh_key)['key'],
+      type   => $auth_type,
+      key    => $auth_key,
       tag    => $tags,
     }
   }
