@@ -194,8 +194,8 @@ class pgbackrest::repository(
     @@ssh_authorized_key { "pgbackrest-${fqdn}":
       ensure => present,
       user   => $ssh_user,
-      type   => $ssh_key['type'],
-      key    => $ssh_key['key'],
+      type   => unwrap($ssh_key)['type'],
+      key    => unwrap($ssh_key)['key'],
       tag    => "pgbackrest-repository-${host_group}",
     }
   }
