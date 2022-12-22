@@ -148,7 +148,7 @@ describe 'pgbackrest::stanza' do
     it {
       expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common').with(
         tag: 'pgbackrest_stanza_create-common',
-        command: 'pgbackrest stanza-create --stanza=psql --log-level-console=warn --pg1-host=psql.localhost --pg1-path=/var/lib/postgresql/14/main --pg1-port=5432 --pg1-user=backup',
+        command: 'pgbackrest stanza-create --stanza=psql --log-level-console=warn --pg1-host=psql.localhost --pg1-path=/var/lib/postgresql/14/main --pg1-port=5432 --pg1-user=backup --pg1-host-user=postgres',
       )
     }
   end
