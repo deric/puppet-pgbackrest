@@ -184,7 +184,7 @@ class pgbackrest::repository(
     $ssh_key = pgbackrest::ssh_keygen($ssh_user, $ssh_key_config)
     @@ssh_authorized_key { "pgbackrest-${::fqdn}":
       ensure => present,
-      user   => 'postgres',
+      user   => $ssh_user,
       type   => $ssh_key['type'],
       key    => $ssh_key['key'],
       tag    => "pgbackrest-repository-${host_group}",

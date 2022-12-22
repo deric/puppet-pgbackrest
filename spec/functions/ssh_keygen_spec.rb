@@ -18,4 +18,18 @@ describe 'pgbackrest::ssh_keygen' do
   end
 
   it { is_expected.to run.with_params(nil).and_raise_error(StandardError) }
+
+  it 'parses ssh rsa key' do
+    filename = '/tmp/.sshgen/id_rsa.pub'
+    content = 'ssh-rsa AVeryRSAKey comment@host'
+    FileUtils.mkdir_p '/tmp/.sshgen'
+    File.write(filename, content)
+
+    is_expected.to run.with_params(ENV['USER'], { 'dir' => '/tmp/.sshgen', 'type' => 'rsa'  })\
+                      .and_return(
+        { 'type' => 'ssh-rsa', 'key' => 'AVeryRSAKey', 'comment' => 'comment@host' },
+      )
+
+    File.delete(filename)
+  end
 end
