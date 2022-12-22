@@ -182,7 +182,7 @@ class pgbackrest::repository(
   # to all DB instances in host_group.
   if $manage_ssh_keys {
     # Load or generate ssh public and private key for given local user
-    $ssh_key = pgbackrest::ssh_keygen($user, $ssh_key_config)
+    $ssh_key = pgbackrest::ssh_keygen($user, "${backup_dir}/.ssh", $ssh_key_config)
     @@ssh_authorized_key { "pgbackrest-${fqdn}":
       ensure => present,
       user   => $ssh_user,

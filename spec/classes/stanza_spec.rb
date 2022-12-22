@@ -65,13 +65,16 @@ describe 'pgbackrest::stanza' do
           'type': 'ed25519',
         },
         version: '14',
+        db_path: '/tmp/psql',
       }
     end
 
+    let(:db_dir) { '/tmp/psql' }
+
     before(:each) do
-      filename = '/tmp/.sshgen/id_ed25519.pub'
+      filename = "#{db_dir}/.ssh/id_ed25519.pub"
       content = 'ssh-ed25519 AVeryDummyKey comment@host'
-      FileUtils.mkdir_p '/tmp/.sshgen'
+      FileUtils.mkdir_p "#{db_dir}/.ssh"
       File.write(filename, content)
     end
 
@@ -84,6 +87,10 @@ describe 'pgbackrest::stanza' do
           tag: ['pgbackrest-common'],
         )
     }
+
+    after(:each) do
+      FileUtils.rm_rf db_dir
+    end
   end
 
   context 'with plain text password' do

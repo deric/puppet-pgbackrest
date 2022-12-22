@@ -145,7 +145,7 @@ class pgbackrest::stanza (
 
   if $manage_ssh_keys {
     # Load or generate ssh public and private key for given user
-    $ssh_key = pgbackrest::ssh_keygen($ssh_user, $ssh_key_config)
+    $ssh_key = pgbackrest::ssh_keygen($ssh_user, "${db_path}/.ssh", $ssh_key_config)
     @@ssh_authorized_key { "${ssh_user}-${facts['networking']['fqdn']}":
       ensure => present,
       user   => $ssh_user,

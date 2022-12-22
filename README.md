@@ -35,22 +35,32 @@ include pgbackrest::repository
 
 Should be included on a database server. Exported statements are not executed on `stanza` (database) server, but will be collected by an assigned `repository` with matching `host_group` (if exists).
 
+- **Install** `pgbackrest` package
 - **Generate** ssh keys (if given ssh key doesn't exist) and export public ssh key (only if `pgbackrest::manage_ssh_keys: true`), default: `false`
 - Export host ssh key (only if `pgbackrest::manage_host_keys: true`), default: `true`
 - **Create** a PostgreSQL user `pgbackrest::db_user` and database `pgbackrest::db_name` with randomly generated password, default user: `backup` (when `pgbackrest::stanza::manage_dbuser: true`)
-- Export username and password
+- Export username and password for `.pgpass` file
 - **Grant** `pgbackrest::db_user` necessary permissions for executing `pg_basebackup` and allow connection from repository server (when `pgbackrest::manage_hba: true`)
 - Export `pgbackrest stanza-create` command
 - Export cron configs for backup jobs
-- **Import** host ssh key of `repository` server with the same `host_group` (if `pgbackrest::manage_host_keys: true`)
-- **Import** public ssh key of `repository` server with the same `host_group`
+- **Import** host ssh key of `repository` server matching the `host_group` (if `pgbackrest::manage_host_keys: true`)
+- **Import** public ssh key of `repository` server matching the `host_group`
 
 ### pgbackrest::repository
 
 Repository is a server where backups are stored (though could be located on the same server).
 
--
+- **Install** `pgbackrest` package
+- **Generate** ssh keys (if given ssh key doesn't exist) and export public ssh key (only if `pgbackrest::manage_ssh_keys: true`), default: `false`
+- **Create** local unix account `pgbackrest::backup_user`
+- **Create** directories for storing backups, logs, temporary data
+
 
 ## Common params
 
 - `pgbackrest::backup_dir` directory where backups will be stored
+
+## Caveats
+
+- This module does NOT manage firewall rules
+- At least two Puppet runs are required to apply all configuration.

@@ -1,27 +1,22 @@
 # frozen_string_literal: true
 
-require 'etc'
 # https://github.com/puppetlabs/puppet-specifications/blob/master/language/func-api.md#the-4x-api
 #
 #  username
+#  ssh_dir
 #  config = {
 #    type = rsa | dsa | ecdsa | ed25519
-#    dir = ~/.ssh
 #  }
 #
 Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
   dispatch :ssh_keygen do
     param 'String', :username
+    param 'String', :ssh_dir
     param 'Hash', :config
     return_type 'Hash'
   end
 
-  def pubkey_file(entry_dir, config)
-    dir = if config.key? 'dir'
-            config['dir']
-          else
-            entry_dir
-          end
+  def pubkey_file(dir, config)
     pubkey = case ssh_key_type(config)
              when 'dsa'
                'id_dsa.pub'
@@ -88,15 +83,8 @@ Puppet::Functions.create_function(:"pgbackrest::ssh_keygen") do
     fetch_key(path)
   end
 
-  def ssh_keygen(username, config)
-    Etc.passwd do |entry|
-      if entry.name == username
-        path = pubkey_file(entry.dir, config)
-        return fetch_or_generate(entry.name, path, config)
-      end
-    end
-    # user has no passwd entry, relying on config[dir]
-    path = pubkey_file('', config)
+  def ssh_keygen(username, ssh_dir, config = {})
+    path = pubkey_file(ssh_dir, config)
     fetch_or_generate(username, path, config)
   end
 end

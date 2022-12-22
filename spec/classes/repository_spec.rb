@@ -121,14 +121,16 @@ describe 'pgbackrest::repository' do
         manage_host_keys: true,
         user: 'pgbackup',
         group: 'pgbackup',
-        ssh_key_config: { 'dir' => '/tmp/.sshgen', 'type' => 'rsa' },
+        backup_dir: '/tmp/pgbackrest',
+        ssh_key_config: { 'type' => 'rsa' },
       }
     end
+    let(:backup_home) { '/tmp/pgbackrest' }
 
     before(:each) do
-      filename = '/tmp/.sshgen/id_rsa.pub'
+      filename = "#{backup_home}/.ssh/id_rsa.pub"
       content = 'ssh-rsa ASlightlyDummyRSAKey comment@host'
-      FileUtils.mkdir_p '/tmp/.sshgen'
+      FileUtils.mkdir_p "#{backup_home}/.ssh"
       File.write(filename, content)
     end
 
@@ -151,7 +153,7 @@ describe 'pgbackrest::repository' do
     end
 
     after(:each) do
-      FileUtils.rm_rf '/tmp/.sshgen'
+      FileUtils.rm_rf backup_home
     end
   end
 end
