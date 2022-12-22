@@ -86,6 +86,14 @@ describe 'pgbackrest::repository' do
     }
 
     it {
+      is_expected.to contain_file('/backup/spool')
+        .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup',
+            mode: '0750')
+    }
+
+    it {
       is_expected.to contain_ini_setting('global log-path').with(
         {
           ensure: 'present', section: 'global',

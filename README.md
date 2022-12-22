@@ -37,6 +37,7 @@ Should be included on a database server.
 
 - Exports public ssh key (only if `pgbackrest::manage_ssh_keys: true`), default: `false`
 - Exports host ssh key (only if `pgbackrest::manage_host_keys: true`), default: `true`
+- Create a PostgreSQL user `pgbackrest::db_user` and database `pgbackrest::db_name` with randomly generated password, default user: `backup` (when `pgbackrest::stanza::manage_dbuser: true`)
 
 ### pgbackrest::repository
 

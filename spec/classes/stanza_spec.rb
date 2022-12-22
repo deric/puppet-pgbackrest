@@ -58,11 +58,6 @@ describe 'pgbackrest::stanza' do
   context 'manage ssh keys' do
     let(:params) do
       {
-        backups: {
-          common: {
-            full: {},
-          },
-        },
         id: 'psql',
         manage_ssh_keys: true,
         ssh_key_config: {
@@ -131,6 +126,29 @@ describe 'pgbackrest::stanza' do
         target: '/backup/.ssh/known_hosts',
         key: 'AAAAE2VjZHNhLXNoYTBtbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHSTDlBLg+FouBL5gEmO1PYmVNbguoZ5ECdIG/Acwt9SylhSAqZSlKKFojY3XwcTvokz/zfeVPesnNnBVgFWmXU=',
         tag: ['pgbackrest-common'],
+      )
+    }
+  end
+
+  context 'with backup schedule' do
+    let(:params) do
+      {
+        backups: {
+          common: {
+            full: {},
+          },
+        },
+        id: 'psql',
+        manage_ssh_keys: false,
+        manage_host_keys: false,
+        version: '14',
+      }
+    end
+
+    it {
+      expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common').with(
+        tag: 'pgbackrest_stanza_create-common',
+        command: 'pgbackrest stanza-create --stanza=psql --log-level-console=warn --pg1-host=psql.localhost --pg1-path=/var/lib/postgresql/14/main --pg1-port=5432 --pg1-user=backup',
       )
     }
   end
