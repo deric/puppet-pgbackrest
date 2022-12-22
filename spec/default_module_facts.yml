@@ -11,3 +11,6 @@ pgbackrest:
   repository-psql.localhost:
     type: ssh-ed25519
     key: AAAAC3NzaC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4
+  stanza-psql.localhost:
+    type: ssh-ed25519
+    key: AAAABBBBCC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4

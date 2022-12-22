@@ -60,37 +60,22 @@ describe 'pgbackrest::stanza' do
       {
         id: 'psql',
         manage_ssh_keys: true,
-        ssh_key_config: {
-          'dir': '/tmp/.sshgen',
-          'type': 'ed25519',
-        },
+        ssh_key_type: 'ed25519',
         version: '14',
         db_path: '/tmp/psql',
+        backup_user: 'backup'
       }
-    end
-
-    let(:db_dir) { '/tmp/psql' }
-
-    before(:each) do
-      filename = "#{db_dir}/.ssh/id_ed25519.pub"
-      content = 'ssh-ed25519 AVeryDummyKey comment@host'
-      FileUtils.mkdir_p "#{db_dir}/.ssh"
-      File.write(filename, content)
     end
 
     it {
       expect(exported_resources).to contain_ssh_authorized_key('postgres-psql.localhost')
         .with(
-          user: 'postgres',
+          user: 'backup',
           type: 'ssh-ed25519',
-          key: 'AVeryDummyKey',
+          key: 'AAAABBBBCC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
           tag: ['pgbackrest-common'],
         )
     }
-
-    after(:each) do
-      FileUtils.rm_rf db_dir
-    end
   end
 
   context 'with plain text password' do

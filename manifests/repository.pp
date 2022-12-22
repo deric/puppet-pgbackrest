@@ -195,7 +195,7 @@ class pgbackrest::repository(
     }
 
     # Load ssh public key for given local user
-    # NOTE: we can't access remote disk from compile server
+    # NOTE: we can't access remote disk from a compile server
     # and exported resources doesn't support Deferred objects
     $ssh_key = $facts['pgbackrest']["repository-${fqdn}"]['key']
     if $ssh_key {
