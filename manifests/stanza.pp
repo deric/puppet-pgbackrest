@@ -153,8 +153,8 @@ class pgbackrest::stanza (
     @@ssh_authorized_key { "${ssh_user}-${facts['networking']['fqdn']}":
       ensure => present,
       user   => $ssh_user,
-      type   => $auth_type,
-      key    => $auth_key,
+      type   => Deferred('inline_epp', ['<%= $value -%>', {'value' => $auth_type}]),
+      key    => Deferred('inline_epp', ['<%= $value -%>', {'value' => $auth_key}]),
       tag    => $tags,
     }
   }
