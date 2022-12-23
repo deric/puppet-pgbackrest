@@ -121,25 +121,39 @@ describe 'pgbackrest::repository' do
         manage_host_keys: true,
         user: 'pgbackup',
         group: 'pgbackup',
-        backup_dir: '/tmp/pgbackrest',
-        ssh_key_config: { 'type' => 'rsa' },
+        backup_dir: '/var/lib/pgbackrest',
+        ssh_key_type: 'ed25519',
       }
     end
-    let(:backup_home) { '/tmp/pgbackrest' }
 
-    before(:each) do
-      filename = "#{backup_home}/.ssh/id_rsa.pub"
-      content = 'ssh-rsa ASlightlyDummyRSAKey comment@host'
-      FileUtils.mkdir_p "#{backup_home}/.ssh"
-      File.write(filename, content)
+    it {
+      is_expected.to contain_file('/var/lib/pgbackrest/.ssh')
+        .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup',
+            mode: '0700')
+    }
+
+    it {
+      is_expected.to contain_file('/var/lib/pgbackrest/.ssh/known_hosts')
+        .with(ensure: 'present',
+            owner: 'pgbackup',
+            group: 'pgbackup',
+            mode: '0600')
+    }
+
+    it 'generates ssh key pair, if missing' do
+      is_expected.to contain_exec('pgbackrest-generate-ssh-key_pgbackup').with(
+        command: 'su - pgbackup -c "ssh-keygen -t ed25519 -q -N \'\' -f /var/lib/pgbackrest/.ssh/id_ed25519"',
+      )
     end
 
     it 'exports public ssh key' do
       expect(exported_resources).to contain_ssh_authorized_key('pgbackrest-psql.localhost')
         .with(
           user: 'postgres',
-          type: 'ssh-rsa',
-          key: 'ASlightlyDummyRSAKey',
+          type: 'ssh-ed25519',
+          key: 'AAAAC3NzaC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
         )
     end
 
@@ -152,8 +166,21 @@ describe 'pgbackrest::repository' do
       )
     end
 
-    after(:each) do
-      FileUtils.rm_rf backup_home
-    end
+    it {
+      is_expected.to contain_file('/var/cache/pgbackrest')
+        .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup')
+    }
+
+    it {
+      is_expected.to contain_ini_setting('pgbackrest-repository').with(
+        {
+          ensure: 'present',
+          setting: 'pgbackup', value: '/var/lib/pgbackrest/.ssh/id_ed25519.pub',
+          path: '/var/cache/pgbackrest/exported_keys.ini'
+        },
+      )
+    }
   end
 end

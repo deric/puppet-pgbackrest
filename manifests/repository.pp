@@ -43,7 +43,7 @@ class pgbackrest::repository(
   String                          $db_name = $pgbackrest::db_name,
   String                          $db_user = $pgbackrest::db_user,
   String                          $ssh_user = $pgbackrest::ssh_user,
-  Hash                            $ssh_key_config = {},
+  String                          $ssh_key_type = 'ed25519',
   Hash                            $config = {},
   ) inherits pgbackrest {
 
@@ -181,14 +181,42 @@ class pgbackrest::repository(
   # Export (and add as authorized key) ssh key from pgbackup user
   # to all DB instances in host_group.
   if $manage_ssh_keys {
-    # Load or generate ssh public and private key for given local user
-    $ssh_key = pgbackrest::ssh_keygen($user, "${backup_dir}/.ssh", $ssh_key_config)
-    @@ssh_authorized_key { "pgbackrest-${fqdn}":
-      ensure => present,
-      user   => $ssh_user,
-      type   => $ssh_key['type'],
-      key    => $ssh_key['key'],
-      tag    => "pgbackrest-repository-${host_group}",
+    $privkey_path = pgbackrest::ssh_key_path("${backup_dir}/.ssh", $ssh_key_type, false)
+    $pubkey_path = pgbackrest::ssh_key_path("${backup_dir}/.ssh", $ssh_key_type, true)
+    exec { "pgbackrest-generate-ssh-key_${user}":
+      command => "su - ${user} -c \"ssh-keygen -t ${ssh_key_type} -q -N '' -f ${privkey_path}\"",
+      path    => ['/usr/bin'],
+      onlyif  => "test ! -f ${privkey_path}",
+    }
+
+    file { '/var/cache/pgbackrest':
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+    }
+
+    ini_setting { 'pgbackrest-repository':
+      ensure    => present,
+      path      => '/var/cache/pgbackrest/exported_keys.ini',
+      section   => 'repository',
+      setting   => $user,
+      value     => $pubkey_path,
+      show_diff => true,
+      require   => File['/var/cache/pgbackrest']
+    }
+
+    # Load ssh public key for given local user
+    # NOTE: we can't access remote disk from a compile server
+    # and exported resources doesn't support Deferred objects
+    if 'pgbackrest' in $facts and $user in $facts['pgbackrest'] {
+      $ssh_key = $facts['pgbackrest'][$user]['key']
+      @@ssh_authorized_key { "pgbackrest-${fqdn}":
+        ensure => present,
+        user   => $ssh_user,
+        type   => $facts['pgbackrest'][$user]['type'],
+        key    => $ssh_key,
+        tag    => "pgbackrest-repository-${host_group}",
+      }
     }
   }
 

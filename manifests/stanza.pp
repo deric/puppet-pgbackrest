@@ -68,7 +68,7 @@ class pgbackrest::stanza (
   String                            $ssh_user             = 'postgres',
   Integer                           $ssh_port             = 22,
   String                            $host_key_type        = $pgbackrest::host_key_type,
-  Hash                              $ssh_key_config       = {},
+  String                            $ssh_key_type         = 'ed25519',
   Stdlib::AbsolutePath              $backup_dir           = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath              $spool_dir            = $pgbackrest::spool_dir,
   Stdlib::AbsolutePath              $log_dir              = $pgbackrest::log_dir,
@@ -144,14 +144,43 @@ class pgbackrest::stanza (
   }
 
   if $manage_ssh_keys {
-    # Load or generate ssh public and private key for given user
-    $ssh_key = pgbackrest::ssh_keygen($ssh_user, "${db_path}/.ssh", $ssh_key_config)
-    @@ssh_authorized_key { "${ssh_user}-${facts['networking']['fqdn']}":
-      ensure => present,
-      user   => $ssh_user,
-      type   => $ssh_key['type'],
-      key    => $ssh_key['key'],
-      tag    => $tags,
+    $privkey_path = pgbackrest::ssh_key_path("${db_path}/.ssh", $ssh_key_type, false)
+    $pubkey_path = pgbackrest::ssh_key_path("${db_path}/.ssh", $ssh_key_type, true)
+    exec { "pgbackrest-generate-ssh-key_${ssh_user}":
+      command => "su - ${ssh_user} -c \"ssh-keygen -t ${ssh_key_type} -q -N '' -f ${privkey_path}\"",
+      path    => ['/usr/bin'],
+      onlyif  => "test ! -f ${privkey_path}",
+    }
+
+    file { '/var/cache/pgbackrest':
+      ensure  => directory,
+      owner   => $ssh_user,
+      group   => $ssh_user,
+    }
+
+    ini_setting { 'pgbackrest-stanza':
+      ensure    => present,
+      path      => '/var/cache/pgbackrest/exported_keys.ini',
+      section   => 'stanza',
+      setting   => $ssh_user,
+      value     => $pubkey_path,
+      show_diff => true,
+      require   => File['/var/cache/pgbackrest']
+    }
+
+    # Load ssh public key for given local user
+    # NOTE: we can't access remote disk from a compile server
+    # and exported resources doesn't support Deferred objects
+
+    if 'pgbackrest' in $facts and $ssh_user in $facts['pgbackrest'] {
+      $ssh_key = $facts['pgbackrest'][$ssh_user]['key']
+      @@ssh_authorized_key { "${ssh_user}-${address}":
+        ensure => present,
+        user   => $backup_user,
+        type   => $facts['pgbackrest'][$ssh_user]['type'],
+        key    => $ssh_key,
+        tag    => $tags,
+      }
     }
   }
 
