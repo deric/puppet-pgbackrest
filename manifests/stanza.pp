@@ -208,7 +208,7 @@ class pgbackrest::stanza (
         command => @("CMD"/L),
         pgbackrest stanza-create --stanza=${_cluster} --log-level-console=${log_level_console} \
         --pg1-host=${address} --pg1-path=${db_path}/${version}/${db_cluster} --pg1-port=${port} \
-        --pg1-user=${db_user} --pg1-host-user=${ssh_user}
+        --pg1-database=${db_name} --pg1-user=${db_user} --pg1-host-user=${ssh_user}
         | -CMD
         path    => ['/usr/bin'],
         cwd     => $backup_dir,

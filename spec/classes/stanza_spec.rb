@@ -165,7 +165,7 @@ describe 'pgbackrest::stanza' do
         tag: 'pgbackrest_stanza_create-common',
         command: 'pgbackrest stanza-create --stanza=psql --log-level-console=warn'\
                  ' --pg1-host=psql.localhost --pg1-path=/var/lib/postgresql/14/main'\
-                 ' --pg1-port=5432 --pg1-user=backup --pg1-host-user=postgres',
+                 ' --pg1-port=5432 --pg1-database=backup --pg1-user=backup --pg1-host-user=postgres',
       )
     }
   end
