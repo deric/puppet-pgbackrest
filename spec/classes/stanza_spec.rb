@@ -62,9 +62,15 @@ describe 'pgbackrest::stanza' do
         manage_ssh_keys: true,
         ssh_key_type: 'ed25519',
         version: '14',
-        db_path: '/tmp/psql',
+        db_path: '/var/lib/postgresql',
         backup_user: 'backup'
       }
+    end
+
+    it 'generates ssh key pair, if missing' do
+      is_expected.to contain_exec('pgbackrest-generate-ssh-key_postgres').with(
+        command: 'su - postgres -c "ssh-keygen -t ed25519 -q -N \'\' -f /var/lib/postgresql/.ssh/id_ed25519"',
+      )
     end
 
     it {
@@ -75,6 +81,23 @@ describe 'pgbackrest::stanza' do
           key: 'AAAABBBBCC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
           tag: ['pgbackrest-common'],
         )
+    }
+
+    it {
+      is_expected.to contain_file('/var/cache/pgbackrest')
+        .with(ensure: 'directory',
+            owner: 'postgres',
+            group: 'postgres')
+    }
+
+    it {
+      is_expected.to contain_ini_setting('pgbackrest-stanza').with(
+        {
+          ensure: 'present',
+          setting: 'postgres', value: '/var/lib/postgresql/.ssh/id_ed25519.pub',
+          path: '/var/cache/pgbackrest/exported_keys.ini'
+        },
+      )
     }
   end
 

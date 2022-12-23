@@ -153,8 +153,20 @@ class pgbackrest::stanza (
       onlyif  => "test ! -f ${privkey_path}",
     }
 
-    User<| title == $ssh_user |> {
-      comment => "pgbackrest-${ssh_key_type}",
+    file { '/var/cache/pgbackrest':
+      ensure  => directory,
+      owner   => $ssh_user,
+      group   => $ssh_user,
+    }
+
+    ini_setting { 'pgbackrest-stanza':
+      ensure    => present,
+      path      => '/var/cache/pgbackrest/exported_keys.ini',
+      section   => 'stanza',
+      setting   => $ssh_user,
+      value     => $pubkey_path,
+      show_diff => true,
+      require   => File['/var/cache/pgbackrest']
     }
 
     # Load ssh public key for given local user
