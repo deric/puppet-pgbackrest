@@ -186,7 +186,6 @@ class pgbackrest::repository(
     exec { "pgbackrest-generate-ssh-key_${user}":
       command => "su - ${user} -c \"ssh-keygen -t ${ssh_key_type} -q -N '' -f ${privkey_path}\"",
       path    => ['/usr/bin'],
-      cwd     => $backup_dir,
       onlyif  => "test ! -f ${privkey_path}",
     }
 
