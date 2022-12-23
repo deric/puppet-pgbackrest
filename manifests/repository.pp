@@ -190,8 +190,20 @@ class pgbackrest::repository(
       onlyif  => "test ! -f ${privkey_path}",
     }
 
-    User<| title == $user |> {
-      comment => "pgbackrest-${ssh_key_type}",
+    file { '/var/cache/pgbackrest':
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+    }
+
+    ini_setting { 'pgbackrest-repository':
+      ensure    => present,
+      path      => '/var/cache/pgbackrest/exported_keys.ini',
+      section   => 'repository',
+      setting   => $user,
+      value     => $pubkey_path,
+      show_diff => true,
+      require   => File['/var/cache/pgbackrest']
     }
 
     # Load ssh public key for given local user

@@ -126,6 +126,28 @@ describe 'pgbackrest::repository' do
       }
     end
 
+    it {
+      is_expected.to contain_file('/var/lib/pgbackrest/.ssh')
+        .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup',
+            mode: '0700')
+    }
+
+    it {
+      is_expected.to contain_file('/var/lib/pgbackrest/.ssh/known_hosts')
+        .with(ensure: 'present',
+            owner: 'pgbackup',
+            group: 'pgbackup',
+            mode: '0600')
+    }
+
+    it 'generates ssh key pair, if missing' do
+      is_expected.to contain_exec('pgbackrest-generate-ssh-key_pgbackup').with(
+        command: 'su - pgbackup -c "ssh-keygen -t ed25519 -q -N \'\' -f /var/lib/pgbackrest/.ssh/id_ed25519"',
+      )
+    end
+
     it 'exports public ssh key' do
       expect(exported_resources).to contain_ssh_authorized_key('pgbackrest-psql.localhost')
         .with(
@@ -143,5 +165,22 @@ describe 'pgbackrest::repository' do
         tag: ['pgbackrest-repository-common'],
       )
     end
+
+    it {
+      is_expected.to contain_file('/var/cache/pgbackrest')
+        .with(ensure: 'directory',
+            owner: 'pgbackup',
+            group: 'pgbackup')
+    }
+
+    it {
+      is_expected.to contain_ini_setting('pgbackrest-repository').with(
+        {
+          ensure: 'present',
+          setting: 'pgbackup', value: '/var/lib/pgbackrest/.ssh/id_ed25519.pub',
+          path: '/var/cache/pgbackrest/exported_keys.ini'
+        },
+      )
+    }
   end
 end
