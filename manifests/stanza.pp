@@ -89,13 +89,13 @@ class pgbackrest::stanza (
   }
 
   $_seed = $seed ? {
-    undef   => fqdn_rand_string('64',''),
+    undef   => fqdn_rand_string(64,''),
     default => $seed,
   }
 
   # Generate password if not defined
   $real_password = $db_password ? {
-    ''      => fqdn_rand_string('64','',$_seed),
+    ''      => fqdn_rand_string(64,'',$_seed),
     default => $db_password =~ Sensitive ? {
       true  => $db_password.unwrap,
       false => $db_password
