@@ -153,9 +153,9 @@ class pgbackrest::stanza (
     }
 
     file { '/var/cache/pgbackrest':
-      ensure  => directory,
-      owner   => $ssh_user,
-      group   => $ssh_user,
+      ensure => directory,
+      owner  => $ssh_user,
+      group  => $ssh_user,
     }
 
     ini_setting { 'pgbackrest-stanza':
@@ -165,7 +165,7 @@ class pgbackrest::stanza (
       setting   => $ssh_user,
       value     => $pubkey_path,
       show_diff => true,
-      require   => File['/var/cache/pgbackrest']
+      require   => File['/var/cache/pgbackrest'],
     }
 
     # Load ssh public key for given local user
@@ -201,9 +201,8 @@ class pgbackrest::stanza (
     }
   }
 
-  if !empty($backups){
+  if !empty($backups) {
     $backups.each |String $host_group, Hash $config| {
-
       @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
         command => @("CMD"/L),
         pgbackrest stanza-create --stanza=${_cluster} --log-level-console=${log_level_console} \
@@ -234,29 +233,28 @@ class pgbackrest::stanza (
       }
 
       if $manage_cron {
-
-          $config.each |$backup_type, $schedule| {
+        $config.each |$backup_type, $schedule| {
           # declare cron job, use defaults from stanza
-          create_resources(pgbackrest::cron_backup, {"cron_backup-${host_group}-${address}-${backup_type}" => $schedule} , {
-            id                   => $id,
-            repo                 => $repo,
-            cluster              => $_cluster,
-            db_name              => $db_name,
-            db_user              => $db_user,
-            host_group           => $host_group,
-            backup_dir           => $backup_dir,
-            backup_type          => $backup_type,
-            backup_user          => $backup_user,
-            server_address       => $address,
-            process_max          => $process_max,
-            compress_type        => $compress_type,
-            compress_level       => $compress_level,
-            archive_timeout      => $archive_timeout,
-            log_dir              => $log_dir,
-            log_level_file       => $log_level_file,
-            log_level_console    => $log_level_console,
-            binary               => $binary,
-            redirect_console     => $redirect_console,
+          create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${address}-${backup_type}" => $schedule }, {
+              id                   => $id,
+              repo                 => $repo,
+              cluster              => $_cluster,
+              db_name              => $db_name,
+              db_user              => $db_user,
+              host_group           => $host_group,
+              backup_dir           => $backup_dir,
+              backup_type          => $backup_type,
+              backup_user          => $backup_user,
+              server_address       => $address,
+              process_max          => $process_max,
+              compress_type        => $compress_type,
+              compress_level       => $compress_level,
+              archive_timeout      => $archive_timeout,
+              log_dir              => $log_dir,
+              log_level_file       => $log_level_file,
+              log_level_console    => $log_level_console,
+              binary               => $binary,
+              redirect_console     => $redirect_console,
           })
         }
       } # manage_cron

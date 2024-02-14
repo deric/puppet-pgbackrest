@@ -2,18 +2,17 @@
 #
 # @api private
 #
-class pgbackrest::config(
+class pgbackrest::config (
   Stdlib::AbsolutePath $config_file = '/etc/pgbackrest.conf',
   String               $user = 'backup',
   String               $group = 'backup',
   Hash                 $config = {},
   Boolean              $show_diff = true,
-  ){
-
+) {
   file { $config_file:
-    ensure  => file,
-    owner   => $user,
-    group   => $group,
+    ensure => file,
+    owner  => $user,
+    group  => $group,
   }
 
   $config.each |String $section, Hash $settings| {
