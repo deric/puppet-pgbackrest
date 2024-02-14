@@ -7,9 +7,10 @@ fixtures:
     cron_core: puppetlabs/cron_core
     postgresql:
       repo: puppetlabs/postgresql
-      ref: 8.2.1
+      ref: 10.0.2
     sshkeys_core: puppetlabs/sshkeys_core
     stdlib: puppetlabs/stdlib
     inifile:
       repo: puppetlabs/inifile
-      ref: 5.4.0
+      ref: 6.0.0
+    systemd: puppet/systemd
