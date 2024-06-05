@@ -3,16 +3,31 @@
 # @api private
 #
 class pgbackrest::config (
-  Stdlib::AbsolutePath $config_file = '/etc/pgbackrest.conf',
+  Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',
+  String               $config_file = 'pgbackrest.conf',
   String               $user = 'backup',
   String               $group = 'backup',
   Hash                 $config = {},
   Boolean              $show_diff = true,
 ) {
-  file { $config_file:
-    ensure => file,
+  # Deprecated location
+  file { '/etc/pgbackrest.conf':
+    ensure => absent,
+  }
+
+  $config_path = "${config_dir}/${config_file}"
+
+  file { $config_dir:
+    ensure => directory,
     owner  => $user,
     group  => $group,
+  }
+
+  file { $config_path:
+    ensure  => file,
+    owner   => $user,
+    group   => $group,
+    require => File[$config_dir],
   }
 
   $config.each |String $section, Hash $settings| {
@@ -27,7 +42,7 @@ class pgbackrest::config (
       # Write the configuration options to pgbackrest::config::filename
       ini_setting { "${section} ${name}":
         ensure    => $is_present,
-        path      => $config_file,
+        path      => $config_path,
         section   => $section,
         setting   => $name,
         value     => $value,

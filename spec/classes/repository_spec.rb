@@ -61,7 +61,8 @@ describe 'pgbackrest::repository' do
     let(:params) do
       {
         manage_config: true,
-        config_file: '/etc/pgbackrest.conf',
+        config_dir: '/etc/pgbackrest',
+        config_file: 'pgbackrest.conf',
         user: 'pgbackup',
         group: 'pgbackup',
         log_dir: '/backup/log',
@@ -71,6 +72,11 @@ describe 'pgbackrest::repository' do
 
     it {
       is_expected.to contain_file('/etc/pgbackrest.conf')
+        .with(ensure: 'absent')
+    }
+
+    it {
+      is_expected.to contain_file('/etc/pgbackrest/pgbackrest.conf')
         .with(ensure: 'file',
               owner: 'pgbackup',
               group: 'pgbackup')
@@ -98,7 +104,7 @@ describe 'pgbackrest::repository' do
         {
           ensure: 'present', section: 'global',
           setting: 'log-path', value: '/backup/log',
-          path: '/etc/pgbackrest.conf'
+          path: '/etc/pgbackrest/pgbackrest.conf'
         },
       )
     }
@@ -108,7 +114,7 @@ describe 'pgbackrest::repository' do
         {
           ensure: 'present', section: 'global',
           setting: 'spool-path', value: '/backup/spool',
-          path: '/etc/pgbackrest.conf'
+          path: '/etc/pgbackrest/pgbackrest.conf'
         },
       )
     }

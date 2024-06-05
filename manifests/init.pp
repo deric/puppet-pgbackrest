@@ -24,6 +24,7 @@ class pgbackrest(
   String               $ssh_user = 'postgres',
   String               $backup_user = 'backup',
   String               $backup_group = 'backup',
+  Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',
   Stdlib::AbsolutePath $backup_dir = '/var/lib/pgbackrest',
   Stdlib::AbsolutePath $log_dir = '/var/log/pgbackrest',
   Stdlib::AbsolutePath $spool_dir = '/var/spool/pgbackrest',

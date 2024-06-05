@@ -37,7 +37,8 @@ class pgbackrest::repository(
   Boolean                         $manage_config = true,
   Boolean                         $purge_cron = false,
   Optional[Integer]               $uid = undef,
-  Stdlib::AbsolutePath            $config_file = '/etc/pgbackrest.conf',
+  Stdlib::AbsolutePath            $config_dir = $pgbackrest::config_dir,
+  String                          $config_file = 'pgbackrest.conf',
   String                          $host_group = $pgbackrest::host_group,
   Integer                         $hba_entry_order = 50,
   String                          $db_name = $pgbackrest::db_name,
@@ -71,6 +72,7 @@ class pgbackrest::repository(
       })
 
     class { 'pgbackrest::config':
+      config_dir  => $config_dir,
       config_file => $config_file,
       user        => $user,
       group       => $group,
