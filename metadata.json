@@ -16,7 +16,7 @@
     },
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 2.3.3 < 10.0.0"
+      "version_requirement": ">= 9.0.0 < 10.0.0"
     },
     {
       "name": "puppetlabs/inifile",
@@ -56,7 +56,8 @@
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
         "10",
-        "11"
+        "11",
+        "12"
       ]
     },
     {

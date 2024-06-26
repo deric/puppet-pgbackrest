@@ -21,7 +21,7 @@ class pgbackrest::repository(
   Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
   String                          $dir_mode = '0750',
   Stdlib::AbsolutePath            $log_dir = $pgbackrest::log_dir,
-  String                          $exported_ipaddress = "${::ipaddress}/32",
+  String                          $exported_ipaddress = "${facts['networking']['ip']}/32",
   String                          $user = $pgbackrest::backup_user,
   String                          $group = $pgbackrest::backup_group,
   Enum['present', 'absent']       $user_ensure = 'present',
@@ -64,7 +64,7 @@ class pgbackrest::repository(
   }
 
   if $manage_config {
-    $_config = merge($config, {
+    $_config = stdlib::merge($config, {
         'global' => {
           'log-path' => $log_dir,
           'spool-path' => $spool_dir,
@@ -146,8 +146,8 @@ class pgbackrest::repository(
     # Export catalog's host key
     @@sshkey { "pgbackrest-repository-${fqdn}":
       ensure       => present,
-      host_aliases => [$::hostname, $fqdn, $::ipaddress],
-      key          => $::sshecdsakey,
+      host_aliases => [$facts['networking']['hostname'], $facts['networking']['fqdn'], $facts['networking']['ip']],
+      key          => $facts['ssh']['ecdsa']['key'],
       type         => $host_key_type,
       target       => '/var/lib/postgresql/.ssh/known_hosts',
       tag          => "pgbackrest-repository-${host_group}",
