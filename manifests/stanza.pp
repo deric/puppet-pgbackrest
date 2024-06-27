@@ -89,13 +89,13 @@ class pgbackrest::stanza (
   }
 
   $_seed = $seed ? {
-    undef   => fqdn_rand_string(64,''),
+    undef   => stdlib::fqdn_rand_string(64),
     default => $seed,
   }
 
   # Generate password if not defined
   $real_password = $db_password ? {
-    ''      => fqdn_rand_string(64,'',$_seed),
+    ''      => stdlib::fqdn_rand_string(64, undef, $_seed),
     default => $db_password =~ Sensitive ? {
       true  => $db_password.unwrap,
       false => $db_password
@@ -105,7 +105,7 @@ class pgbackrest::stanza (
   if $manage_dbuser {
     postgresql::server::role { $db_user:
       login         => true,
-      password_hash => postgresql_password($db_user, $real_password),
+      password_hash => postgresql::postgresql_password($db_user, $real_password),
       superuser     => false,
       replication   => true,
     }
