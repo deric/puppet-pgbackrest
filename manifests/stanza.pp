@@ -22,7 +22,6 @@
 # @param db_password
 # @param seed
 #   Random password seed
-# @param ssh_key_fact
 # @param backup_dir
 #   Directory where backups will be stored (might be located on remote server)
 #  Default: /var/lib/pgbackrest
@@ -215,7 +214,7 @@ class pgbackrest::stanza (
         #onlyif  => "test ! -d ${backup_dir}/backups/${_cluster}",
         tag     => "pgbackrest_stanza_create-${host_group}",
         user    => $backup_user, # note: error output might not be captured
-        require => Package[$package_name],
+        require => Package[$pgbackrest::package_name],
       }
 
       # Collect resources exported by pgbackrest::repository
