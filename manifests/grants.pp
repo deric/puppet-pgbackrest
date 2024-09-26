@@ -6,7 +6,6 @@ class pgbackrest::grants (
   String $db_name,
   String $db_user,
 ) {
-
   # GRANT USAGE ON SCHEMA pg_catalog TO backup;
   postgresql::server::grant { "pg_catalog_usage_to_${db_user}":
     db          => $db_name,
