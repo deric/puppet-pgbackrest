@@ -104,6 +104,7 @@ class pgbackrest::stanza (
 
   if $manage_dbuser {
     postgresql::server::role { $db_user:
+      db            => $db_name,
       login         => true,
       password_hash => postgresql::postgresql_password($db_user, $real_password),
       superuser     => false,
