@@ -142,7 +142,7 @@ describe 'pgbackrest::repository' do
 
     it {
       is_expected.to contain_file('/var/lib/pgbackrest/.ssh/known_hosts')
-        .with(ensure: 'present',
+        .with(ensure: 'file',
             owner: 'pgbackup',
             group: 'pgbackup',
             mode: '0600')

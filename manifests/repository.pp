@@ -15,7 +15,7 @@
 #
 # @example
 #   include pgbackrest::repository
-class pgbackrest::repository(
+class pgbackrest::repository (
   String                          $fqdn = $facts['networking']['fqdn'],
   Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
@@ -46,8 +46,7 @@ class pgbackrest::repository(
   String                          $ssh_user = $pgbackrest::ssh_user,
   String                          $ssh_key_type = 'ed25519',
   Hash                            $config = {},
-  ) inherits pgbackrest {
-
+) inherits pgbackrest {
   if $manage_user {
     group { $group:
       ensure => $user_ensure,
@@ -69,7 +68,7 @@ class pgbackrest::repository(
           'log-path' => $log_dir,
           'spool-path' => $spool_dir,
         }
-      })
+    })
 
     class { 'pgbackrest::config':
       config_dir  => $config_dir,
@@ -82,17 +81,17 @@ class pgbackrest::repository(
 
   if $manage_dirs {
     file { $backup_dir:
-      ensure  => directory,
-      owner   => $user,
-      group   => $group,
-      mode    => $dir_mode,
+      ensure => directory,
+      owner  => $user,
+      group  => $group,
+      mode   => $dir_mode,
     }
 
     file { $spool_dir:
-      ensure  => directory,
-      owner   => $user,
-      group   => $group,
-      mode    => $dir_mode,
+      ensure => directory,
+      owner  => $user,
+      group  => $group,
+      mode   => $dir_mode,
     }
 
     file { $log_dir:
@@ -112,7 +111,7 @@ class pgbackrest::repository(
     }
 
     file { "${backup_dir}/.ssh/known_hosts":
-      ensure  => present,
+      ensure  => file,
       owner   => $user,
       group   => $group,
       mode    => '0600',
@@ -193,9 +192,9 @@ class pgbackrest::repository(
     }
 
     file { '/var/cache/pgbackrest':
-      ensure  => directory,
-      owner   => $user,
-      group   => $group,
+      ensure => directory,
+      owner  => $user,
+      group  => $group,
     }
 
     ini_setting { 'pgbackrest-repository':
@@ -205,7 +204,7 @@ class pgbackrest::repository(
       setting   => $user,
       value     => $pubkey_path,
       show_diff => true,
-      require   => File['/var/cache/pgbackrest']
+      require   => File['/var/cache/pgbackrest'],
     }
 
     # Load ssh public key for given local user
@@ -234,5 +233,4 @@ class pgbackrest::repository(
       }
     }
   }
-
 }
