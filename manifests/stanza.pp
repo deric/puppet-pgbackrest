@@ -10,6 +10,7 @@
 #   Default repository host group
 # @param repo
 #   Set the repository for a command to operate on, default: 1
+# @param version PostgreSQL major version, e.g. '16'
 # @param address
 # @param port
 # @param db_name

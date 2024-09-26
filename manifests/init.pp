@@ -2,8 +2,26 @@
 #
 # Namespace for shared parameters.
 #
+# @param manage_ssh_keys
+# @param manage_host_keys
+#    Whether ssh host keys should be exported from database server and imported on repository server
+# @param manage_pgpass
+# @param manage_hba
+# @param manage_cron
+# @param purge_cron
+# @param host_group
+# @param host_key_type
+# @param package_name System package to be installed
+# @param package_ensure `installed` or specific version
+# @param db_name
+# @param db_user
 # @param backup_user
-#   Unix account used (mainly) for storing backups
+# @param ssh_user
+# @param backup_group Unix account used (mainly) for storing backups
+# @param config_dir
+# @param backup_dir
+# @param log_dir
+# @param spool_dir
 #
 # @example In order to disable ssh keys management on both stanza (db server) and repository (backup server)
 #   pgbackrest::manage_ssh_key: false

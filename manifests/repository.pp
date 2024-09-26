@@ -2,12 +2,20 @@
 #
 # Configures pgBackRest backup server that can perform remote backups
 #
-# @param $backup_dir
+# @param fqdn
+# @param backup_dir
 #   Directory for storing backups
+# @param spool_dir
+# @param dir_mode
+# @param log_dir
+# @param exported_ipaddress
 # @param user
 #   Local user account used for running and storing backups in its home dir.
 # @param group
 #   Primary group of backup user
+# @param user_ensure
+# @param user_shell Backup user shell
+# @param host_key_type
 # @param purge_cron
 #   Remove cron jobs not managed by Puppet
 # @param manage_dirs
