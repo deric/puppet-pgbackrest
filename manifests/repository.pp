@@ -155,9 +155,10 @@ class pgbackrest::repository(
   }
 
   if $manage_hba {
+    $hostname = $facts['networking']['hostname']
     # sufficient for full backup with enabled WAL archiving
-    @@postgresql::server::pg_hba_rule { "pgbackrest ${::hostname} access":
-      description => "pgbackrest ${::hostname} access",
+    @@postgresql::server::pg_hba_rule { "pgbackrest ${hostname} access":
+      description => "pgbackrest ${hostname} access",
       type        => 'host',
       database    => $pgbackrest::db_name,
       user        => $pgbackrest::db_user,
@@ -168,8 +169,8 @@ class pgbackrest::repository(
     }
 
     # needed for streaming backups or full backup with --stream option
-    @@postgresql::server::pg_hba_rule { "pgbackrest ${::hostname} replication":
-      description => "pgbackrest ${::hostname} replication",
+    @@postgresql::server::pg_hba_rule { "pgbackrest ${hostname} replication":
+      description => "pgbackrest ${hostname} replication",
       type        => 'host',
       database    => 'replication',
       user        => $pgbackrest::db_user,
