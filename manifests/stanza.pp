@@ -119,6 +119,7 @@ class pgbackrest::stanza (
     class { 'pgbackrest::grants':
       db_name => $db_name,
       db_user => $db_user,
+      version => $version,
       require => Postgresql::Server::Database[$db_name],
     }
   }

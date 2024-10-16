@@ -11,6 +11,7 @@ describe 'pgbackrest::grants' do
     {
       db_user: 'backup',
       db_name: 'backup',
+      version: '16',
     }
   end
 
