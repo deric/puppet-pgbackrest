@@ -31,7 +31,7 @@ class pgbackrest::config (
   }
 
   $config.each |String $section, Hash $settings| {
-    $settings.each |String $name, String $value| {
+    $settings.each |String $name, $value| {
       # Remove values not defined or empty
       $is_present = $value ? {
         undef   => 'absent',
