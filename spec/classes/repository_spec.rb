@@ -147,7 +147,6 @@ describe 'pgbackrest::repository' do
         },
       )
     }
-
   end
 
   context 'with manage_ssh_keys' do
