@@ -6,6 +6,10 @@ networking:
 ssh:
   ecdsa:
     key: AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBK0I9tmr+wzrGKYmc5aaI07KpRfxCM+eDjtFfguCD7hKeD3LOD5IO6irhYtjABBfZCJmTCs0U68Bc8LkHCAWvYw=
+    type: ecdsa-sha2-nistp256
+  ed25519:
+    key: AAAAC3NzaC1lZDI1NTE5AAAAIDeht9izXWL1PlUn5YFgLqBnKiUld/Kd+YSefOCqqsnQ
+    type: ssh-ed25519
 sshecdsakey: AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBK0I9tmr+wzrGKYmc5aaI07KpRfxCM+eDjtFfguCD7hKeD3LOD5IO6irhYtjABBfZCJmTCs0U68Bc8LkHCAWvYw=
 pgbackrest:
   pgbackup:

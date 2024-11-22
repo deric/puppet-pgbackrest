@@ -11,6 +11,7 @@
 # @param purge_cron
 # @param host_group
 # @param host_key_type
+#   ssh host key fingerprint, one of 'ecdsa', 'ed25519' or 'rsa'. Default: `ed25519`
 # @param package_name System package to be installed
 # @param package_ensure `installed` or specific version
 # @param db_name
@@ -34,7 +35,7 @@ class pgbackrest (
   Boolean              $manage_cron = true,
   Boolean              $purge_cron = true,
   String               $host_group = 'common',
-  String               $host_key_type = 'ecdsa-sha2-nistp256',
+  Pgbackrest::HostKey  $host_key_type = 'ed25519',
   String               $package_name = 'pgbackrest',
   String               $package_ensure = 'present',
   String               $db_name = 'backup',

@@ -138,8 +138,8 @@ class pgbackrest::stanza (
     @@sshkey { "postgres-${address}":
       ensure       => present,
       host_aliases => [$facts['networking']['hostname'], $facts['networking']['fqdn'], $facts['networking']['ip'], $address],
-      key          => $facts['ssh']['ecdsa']['key'],
-      type         => $pgbackrest::stanza::host_key_type,
+      key          => $facts['ssh'][$host_key_type]['key'],
+      type         => $facts['ssh'][$host_key_type]['type'],
       target       => "${backup_dir}/.ssh/known_hosts",
       tag          => $tags,
     }

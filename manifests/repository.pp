@@ -154,8 +154,8 @@ class pgbackrest::repository (
     @@sshkey { "pgbackrest-repository-${fqdn}":
       ensure       => present,
       host_aliases => [$facts['networking']['hostname'], $facts['networking']['fqdn'], $facts['networking']['ip']],
-      key          => $facts['ssh']['ecdsa']['key'],
-      type         => $host_key_type,
+      key          => $facts['ssh'][$host_key_type]['key'],
+      type         => $facts['ssh'][$host_key_type]['type'],
       target       => '/var/lib/postgresql/.ssh/known_hosts',
       tag          => "pgbackrest-repository-${host_group}",
     }

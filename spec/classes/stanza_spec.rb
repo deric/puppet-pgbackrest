@@ -139,7 +139,7 @@ describe 'pgbackrest::stanza' do
       expect(exported_resources).to contain_sshkey('postgres-psql.localhost').with(
         ensure: 'present',
         target: '/backup/.ssh/known_hosts',
-        key: 'AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBK0I9tmr+wzrGKYmc5aaI07KpRfxCM+eDjtFfguCD7hKeD3LOD5IO6irhYtjABBfZCJmTCs0U68Bc8LkHCAWvYw=',
+        key: 'AAAAC3NzaC1lZDI1NTE5AAAAIDeht9izXWL1PlUn5YFgLqBnKiUld/Kd+YSefOCqqsnQ',
         tag: ['pgbackrest-common'],
       )
     }
