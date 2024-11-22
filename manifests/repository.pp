@@ -71,7 +71,7 @@ class pgbackrest::repository (
   }
 
   if $manage_config {
-    $_config = stdlib::merge($config, {
+    $_config = deep_merge($config, {
         'global' => {
           'log-path' => $log_dir,
           'spool-path' => $spool_dir,

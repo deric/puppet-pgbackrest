@@ -29,6 +29,23 @@ On storage (backup) server:
 include pgbackrest::repository
 ```
 
+repository config:
+```yaml
+pgbackrest::repository::config:
+  global:
+    repo1-path: /backup/pgbackrest
+    repo1-retention-full: 1
+    log-level-console: info
+    log-level-file: detail
+    start-fast: 'y'
+    delta: 'y'
+    backup-standby: 'y'
+    archive-timeout: 3600
+  global:archive-push:
+    compress-level: 3
+    compress-type: lz4
+```
+
 ## How Does This Work
 
 ### pgbackrest::stanza

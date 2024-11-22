@@ -67,6 +67,15 @@ describe 'pgbackrest::repository' do
         group: 'pgbackup',
         log_dir: '/backup/log',
         spool_dir: '/backup/spool',
+        config: {
+          'global': {
+            'repo1-path': '/backup/pgbackrest',
+            'repo1-retention-full': 1,
+          },
+          'global:archive-push': {
+            'compress-level': 3,
+          },
+        }
       }
     end
 
@@ -118,6 +127,27 @@ describe 'pgbackrest::repository' do
         },
       )
     }
+
+    it {
+      is_expected.to contain_ini_setting('global repo1-path').with(
+        {
+          ensure: 'present', section: 'global',
+          setting: 'repo1-path', value: '/backup/pgbackrest',
+          path: '/etc/pgbackrest/pgbackrest.conf'
+        },
+      )
+    }
+
+    it {
+      is_expected.to contain_ini_setting('global repo1-retention-full').with(
+        {
+          ensure: 'present', section: 'global',
+          setting: 'repo1-retention-full', value: '1',
+          path: '/etc/pgbackrest/pgbackrest.conf'
+        },
+      )
+    }
+
   end
 
   context 'with manage_ssh_keys' do
