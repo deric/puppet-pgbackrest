@@ -57,7 +57,7 @@ class pgbackrest::stanza (
   String                            $db_cluster           = 'main',
   String                            $version              = lookup('postgresql::globals::version'),
   Stdlib::AbsolutePath              $db_path              = '/var/lib/postgresql',
-  Variant[String,Sensitive[String]] $db_password          = '',
+  Optional[Pgbackrest::Secret]      $db_password          = undef,
   Optional[String]                  $seed                 = undef,
   Boolean                           $manage_dbuser        = true,
   Boolean                           $manage_ssh_keys      = $pgbackrest::manage_ssh_keys,
@@ -95,7 +95,7 @@ class pgbackrest::stanza (
 
   # Generate password if not defined
   $real_password = $db_password ? {
-    ''      => stdlib::fqdn_rand_string(64, undef, $_seed),
+    undef   => stdlib::fqdn_rand_string(64, undef, $_seed),
     default => $db_password =~ Sensitive ? {
       true  => $db_password.unwrap,
       false => $db_password
