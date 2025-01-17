@@ -55,7 +55,7 @@ class pgbackrest::stanza (
   String                            $db_name              = $pgbackrest::db_name,
   String                            $db_user              = $pgbackrest::db_user,
   String                            $db_cluster           = 'main',
-  String                            $version              = undef,
+  Optional[String]                  $version              = undef,
   Stdlib::AbsolutePath              $db_path              = '/var/lib/postgresql',
   Optional[Pgbackrest::Secret]      $db_password          = undef,
   Optional[String]                  $seed                 = undef,
