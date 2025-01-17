@@ -79,19 +79,12 @@ class pgbackrest::repository (
     })
 
     class { 'pgbackrest::config':
-      config_dir  => $config_dir,
-      config_file => $config_file,
-      user        => $user,
-      group       => $group,
-      config      => $_config,
-    }
-
-    file { $pgbackrest::config_subdir:
-      ensure  => directory,
-      owner   => $user,
-      group   => $group,
-      mode    => $dir_mode,
-      require => Class['pgbackrest::config'],
+      config_dir    => $config_dir,
+      config_subdir => $pgbackrest::config_subdir,
+      config_file   => $config_file,
+      user          => $user,
+      group         => $group,
+      config        => $_config,
     }
   }
 

@@ -91,6 +91,13 @@ describe 'pgbackrest::repository' do
               group: 'pgbackup')
     }
 
+    it {
+      is_expected.to contain_file('/etc/pgbackrest/conf.d')
+        .with(ensure: 'directory',
+              owner: 'pgbackup',
+              group: 'pgbackup')
+    }
+
     it { is_expected.to contain_class('pgbackrest::config') }
 
     it {

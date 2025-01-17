@@ -1,9 +1,10 @@
-# @summary Manages ini config on backup (repository) server
+# @summary Manages pgbackrest ini config
 #
 # @api private
 #
 class pgbackrest::config (
   Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',
+  Stdlib::AbsolutePath $config_subdir = '/etc/pgbackrest/conf.d',
   String               $config_file = 'pgbackrest.conf',
   String               $user = 'backup',
   String               $group = 'backup',
@@ -25,6 +26,13 @@ class pgbackrest::config (
 
   file { $config_path:
     ensure  => file,
+    owner   => $user,
+    group   => $group,
+    require => File[$config_dir],
+  }
+
+  file { $config_subdir:
+    ensure  => directory,
     owner   => $user,
     group   => $group,
     require => File[$config_dir],
