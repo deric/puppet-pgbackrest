@@ -255,7 +255,7 @@ class pgbackrest::stanza (
         #onlyif  => "test ! -d ${backup_dir}/backups/${_cluster}",
         tag     => "pgbackrest_stanza_create-${host_group}",
         user    => $backup_user, # note: error output might not be captured
-        require => [Package[$pgbackrest::package_name], Concat::Fragment["${_cluster}_config"]],
+        require => [Package[$pgbackrest::package_name], Concat::Fragment["${pgbackrest::config_subdir}/${_cluster}.conf"]],
       }
 
       # Collect resources exported by pgbackrest::repository
