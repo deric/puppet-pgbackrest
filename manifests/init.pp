@@ -19,7 +19,8 @@
 # @param backup_user
 # @param ssh_user
 # @param backup_group Unix account used (mainly) for storing backups
-# @param config_dir
+# @param config_dir Main configuration directory
+# @param config_subdir Included config (sub)dir
 # @param backup_dir
 # @param log_dir
 # @param spool_dir
@@ -44,6 +45,7 @@ class pgbackrest (
   String               $backup_user = 'backup',
   String               $backup_group = 'backup',
   Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',
+  Stdlib::AbsolutePath $config_subdir = '/etc/pgbackrest/conf.d',
   Stdlib::AbsolutePath $backup_dir = '/var/lib/pgbackrest',
   Stdlib::AbsolutePath $log_dir = '/var/log/pgbackrest',
   Stdlib::AbsolutePath $spool_dir = '/var/spool/pgbackrest',

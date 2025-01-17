@@ -85,6 +85,14 @@ class pgbackrest::repository (
       group       => $group,
       config      => $_config,
     }
+
+    file { $pgbackrest::config_subdir:
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+      mode    => $dir_mode,
+      require => Class['pgbackrest::config'],
+    }
   }
 
   if $manage_dirs {
@@ -214,6 +222,8 @@ class pgbackrest::repository (
       show_diff => true,
       require   => File['/var/cache/pgbackrest'],
     }
+
+    Concat::Fragment <<| tag == "pgbackrest-repository-${host_group}" |>>
 
     # Load ssh public key for given local user
     # NOTE: we can't access remote disk from a compile server
