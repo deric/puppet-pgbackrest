@@ -42,6 +42,22 @@
 #   Full path to backup executable.
 # @param redirect_console
 #   Redirect console output to a log file (make sense especially with custom backup command)
+# @param user
+# @param group
+# @param manage_dbuser
+# @param manage_ssh_keys
+# @param manage_host_keys
+# @param manage_pgpass
+# @param manage_hba
+# @param manage_cron
+# @param host_key_type
+# @param ssh_key_type
+# @param log_dir
+# @param backup_user
+# @param log_level_file
+# @param compress_type
+# @param compress_level
+# @param process_max
 #
 # @example
 #   include pgbackrest::stanza
