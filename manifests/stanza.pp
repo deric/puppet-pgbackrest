@@ -231,7 +231,7 @@ class pgbackrest::stanza (
   $db_conf = {
     'log-level-console' => $log_level_console,
     'pg1-host' => $address,
-    'pg1-path' => "${db_path}/${version}/${db_cluster}",
+    'pg1-path' => "${db_path}/${_version}/${db_cluster}",
     'pg1-port' => $port,
     'pg1-database' => $db_name,
     'pg1-user' => $db_user,
