@@ -64,6 +64,7 @@ The following parameters are available in the `pgbackrest` class:
 * [`manage_pgpass`](#-pgbackrest--manage_pgpass)
 * [`manage_hba`](#-pgbackrest--manage_hba)
 * [`manage_cron`](#-pgbackrest--manage_cron)
+* [`manage_package`](#-pgbackrest--manage_package)
 * [`purge_cron`](#-pgbackrest--purge_cron)
 * [`host_group`](#-pgbackrest--host_group)
 * [`host_key_type`](#-pgbackrest--host_key_type)
@@ -117,6 +118,14 @@ Default value: `true`
 Data type: `Boolean`
 
 
+
+Default value: `true`
+
+##### <a name="-pgbackrest--manage_package"></a>`manage_package`
+
+Data type: `Boolean`
+
+Whether package should be installed by puppet
 
 Default value: `true`
 

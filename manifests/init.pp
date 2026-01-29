@@ -8,6 +8,7 @@
 # @param manage_pgpass
 # @param manage_hba
 # @param manage_cron
+# @param manage_package Whether package should be installed by puppet
 # @param purge_cron
 # @param host_group
 # @param host_key_type
@@ -34,6 +35,7 @@ class pgbackrest (
   Boolean              $manage_pgpass = true,
   Boolean              $manage_hba = true,
   Boolean              $manage_cron = true,
+  Boolean              $manage_package = true,
   Boolean              $purge_cron = true,
   String               $host_group = 'common',
   Pgbackrest::HostKey  $host_key_type = 'ed25519',
@@ -50,8 +52,10 @@ class pgbackrest (
   Stdlib::AbsolutePath $log_dir = '/var/log/pgbackrest',
   Stdlib::AbsolutePath $spool_dir = '/var/spool/pgbackrest',
 ) {
-  class { 'pgbackrest::install':
-    package_name => $package_name,
-    ensure       => $package_ensure,
+  if $manage_package {
+    class { 'pgbackrest::install':
+      package_name => $package_name,
+      ensure       => $package_ensure,
+    }
   }
 }
