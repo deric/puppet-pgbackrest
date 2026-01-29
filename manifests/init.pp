@@ -16,7 +16,7 @@
 # @param package_name System package to be installed
 # @param package_ensure `installed` or specific version
 # @param db_name
-# @param db_user
+# @param db_user DB role for backup operations
 # @param backup_user
 # @param ssh_user
 # @param backup_group Unix account used (mainly) for storing backups
@@ -25,6 +25,7 @@
 # @param backup_dir
 # @param log_dir
 # @param spool_dir
+# @param password_encryption Either md5 or scram-sha-256
 #
 # @example In order to disable ssh keys management on both stanza (db server) and repository (backup server)
 #   pgbackrest::manage_ssh_key: false
@@ -51,6 +52,7 @@ class pgbackrest (
   Stdlib::AbsolutePath $backup_dir = '/var/lib/pgbackrest',
   Stdlib::AbsolutePath $log_dir = '/var/log/pgbackrest',
   Stdlib::AbsolutePath $spool_dir = '/var/spool/pgbackrest',
+  Postgresql::Pg_password_encryption $password_encryption = 'md5',
 ) {
   if $manage_package {
     class { 'pgbackrest::install':

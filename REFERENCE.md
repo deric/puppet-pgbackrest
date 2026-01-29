@@ -80,6 +80,7 @@ The following parameters are available in the `pgbackrest` class:
 * [`backup_dir`](#-pgbackrest--backup_dir)
 * [`log_dir`](#-pgbackrest--log_dir)
 * [`spool_dir`](#-pgbackrest--spool_dir)
+* [`password_encryption`](#-pgbackrest--password_encryption)
 
 ##### <a name="-pgbackrest--manage_ssh_keys"></a>`manage_ssh_keys`
 
@@ -181,9 +182,9 @@ Default value: `'backup'`
 
 Data type: `String`
 
+DB role for backup operations
 
-
-Default value: `'backup'`
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--backup_user"></a>`backup_user`
 
@@ -249,6 +250,14 @@ Data type: `Stdlib::AbsolutePath`
 
 Default value: `'/var/spool/pgbackrest'`
 
+##### <a name="-pgbackrest--password_encryption"></a>`password_encryption`
+
+Data type: `Postgresql::Pg_password_encryption`
+
+Either md5 or scram-sha-256
+
+Default value: `'md5'`
+
 ### <a name="pgbackrest--repository"></a>`pgbackrest::repository`
 
 Configures pgBackRest backup server that can perform remote backups
@@ -296,6 +305,7 @@ The following parameters are available in the `pgbackrest::repository` class:
 * [`manage_cron`](#-pgbackrest--repository--manage_cron)
 * [`manage_user`](#-pgbackrest--repository--manage_user)
 * [`manage_config`](#-pgbackrest--repository--manage_config)
+* [`password_encryption`](#-pgbackrest--repository--password_encryption)
 
 ##### <a name="-pgbackrest--repository--fqdn"></a>`fqdn`
 
@@ -545,6 +555,14 @@ Data type: `Boolean`
 
 Default value: `true`
 
+##### <a name="-pgbackrest--repository--password_encryption"></a>`password_encryption`
+
+Data type: `Postgresql::Pg_password_encryption`
+
+
+
+Default value: `$pgbackrest::password_encryption`
+
 ### <a name="pgbackrest--stanza"></a>`pgbackrest::stanza`
 
 Manages configuration for postgresql database backup
@@ -601,6 +619,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`compress_type`](#-pgbackrest--stanza--compress_type)
 * [`compress_level`](#-pgbackrest--stanza--compress_level)
 * [`process_max`](#-pgbackrest--stanza--process_max)
+* [`password_encryption`](#-pgbackrest--stanza--password_encryption)
 
 ##### <a name="-pgbackrest--stanza--id"></a>`id`
 
@@ -907,6 +926,14 @@ Data type: `Optional[Integer[1,999]]`
 
 
 Default value: `undef`
+
+##### <a name="-pgbackrest--stanza--password_encryption"></a>`password_encryption`
+
+Data type: `Postgresql::Pg_password_encryption`
+
+
+
+Default value: `$pgbackrest::password_encryption`
 
 ## Functions
 
