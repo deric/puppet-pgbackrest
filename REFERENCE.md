@@ -14,7 +14,7 @@
 
 #### Private Classes
 
-* `pgbackrest::config`: Manages ini config on backup (repository) server
+* `pgbackrest::config`: Manages pgbackrest ini config
 * `pgbackrest::grants`: Configure grants for backup user
 * `pgbackrest::install`: Install all required packages
 
@@ -75,6 +75,7 @@ The following parameters are available in the `pgbackrest` class:
 * [`ssh_user`](#-pgbackrest--ssh_user)
 * [`backup_group`](#-pgbackrest--backup_group)
 * [`config_dir`](#-pgbackrest--config_dir)
+* [`config_subdir`](#-pgbackrest--config_subdir)
 * [`backup_dir`](#-pgbackrest--backup_dir)
 * [`log_dir`](#-pgbackrest--log_dir)
 * [`spool_dir`](#-pgbackrest--spool_dir)
@@ -203,9 +204,17 @@ Default value: `'backup'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Main configuration directory
 
 Default value: `'/etc/pgbackrest'`
+
+##### <a name="-pgbackrest--config_subdir"></a>`config_subdir`
+
+Data type: `Stdlib::AbsolutePath`
+
+Included config (sub)dir
+
+Default value: `'/etc/pgbackrest/conf.d'`
 
 ##### <a name="-pgbackrest--backup_dir"></a>`backup_dir`
 
@@ -248,10 +257,21 @@ include pgbackrest::repository
 The following parameters are available in the `pgbackrest::repository` class:
 
 * [`fqdn`](#-pgbackrest--repository--fqdn)
+* [`host_group`](#-pgbackrest--repository--host_group)
 * [`backup_dir`](#-pgbackrest--repository--backup_dir)
+* [`hba_entry_order`](#-pgbackrest--repository--hba_entry_order)
+* [`db_name`](#-pgbackrest--repository--db_name)
+* [`db_user`](#-pgbackrest--repository--db_user)
+* [`ssh_user`](#-pgbackrest--repository--ssh_user)
+* [`ssh_key_type`](#-pgbackrest--repository--ssh_key_type)
+* [`config`](#-pgbackrest--repository--config)
+* [`config_dir`](#-pgbackrest--repository--config_dir)
+* [`config_file`](#-pgbackrest--repository--config_file)
 * [`spool_dir`](#-pgbackrest--repository--spool_dir)
+* [`config_subdir`](#-pgbackrest--repository--config_subdir)
 * [`dir_mode`](#-pgbackrest--repository--dir_mode)
 * [`log_dir`](#-pgbackrest--repository--log_dir)
+* [`uid`](#-pgbackrest--repository--uid)
 * [`exported_ipaddress`](#-pgbackrest--repository--exported_ipaddress)
 * [`user`](#-pgbackrest--repository--user)
 * [`group`](#-pgbackrest--repository--group)
@@ -267,16 +287,6 @@ The following parameters are available in the `pgbackrest::repository` class:
 * [`manage_cron`](#-pgbackrest--repository--manage_cron)
 * [`manage_user`](#-pgbackrest--repository--manage_user)
 * [`manage_config`](#-pgbackrest--repository--manage_config)
-* [`uid`](#-pgbackrest--repository--uid)
-* [`config_dir`](#-pgbackrest--repository--config_dir)
-* [`config_file`](#-pgbackrest--repository--config_file)
-* [`host_group`](#-pgbackrest--repository--host_group)
-* [`hba_entry_order`](#-pgbackrest--repository--hba_entry_order)
-* [`db_name`](#-pgbackrest--repository--db_name)
-* [`db_user`](#-pgbackrest--repository--db_user)
-* [`ssh_user`](#-pgbackrest--repository--ssh_user)
-* [`ssh_key_type`](#-pgbackrest--repository--ssh_key_type)
-* [`config`](#-pgbackrest--repository--config)
 
 ##### <a name="-pgbackrest--repository--fqdn"></a>`fqdn`
 
@@ -286,6 +296,14 @@ Data type: `String`
 
 Default value: `$facts['networking']['fqdn']`
 
+##### <a name="-pgbackrest--repository--host_group"></a>`host_group`
+
+Data type: `String`
+
+The name of this backup repository
+
+Default value: `$pgbackrest::host_group`
+
 ##### <a name="-pgbackrest--repository--backup_dir"></a>`backup_dir`
 
 Data type: `Stdlib::AbsolutePath`
@@ -294,6 +312,70 @@ Directory for storing backups
 
 Default value: `$pgbackrest::backup_dir`
 
+##### <a name="-pgbackrest--repository--hba_entry_order"></a>`hba_entry_order`
+
+Data type: `Integer`
+
+
+
+Default value: `50`
+
+##### <a name="-pgbackrest--repository--db_name"></a>`db_name`
+
+Data type: `String`
+
+
+
+Default value: `$pgbackrest::db_name`
+
+##### <a name="-pgbackrest--repository--db_user"></a>`db_user`
+
+Data type: `String`
+
+
+
+Default value: `$pgbackrest::db_user`
+
+##### <a name="-pgbackrest--repository--ssh_user"></a>`ssh_user`
+
+Data type: `String`
+
+
+
+Default value: `$pgbackrest::ssh_user`
+
+##### <a name="-pgbackrest--repository--ssh_key_type"></a>`ssh_key_type`
+
+Data type: `String`
+
+
+
+Default value: `'ed25519'`
+
+##### <a name="-pgbackrest--repository--config"></a>`config`
+
+Data type: `Hash`
+
+Hash with configuration options
+
+Default value: `{}`
+
+##### <a name="-pgbackrest--repository--config_dir"></a>`config_dir`
+
+Data type: `Stdlib::AbsolutePath`
+
+
+
+Default value: `$pgbackrest::config_dir`
+
+##### <a name="-pgbackrest--repository--config_file"></a>`config_file`
+
+Data type: `String`
+
+
+
+Default value: `'pgbackrest.conf'`
+
 ##### <a name="-pgbackrest--repository--spool_dir"></a>`spool_dir`
 
 Data type: `Stdlib::AbsolutePath`
@@ -301,6 +383,14 @@ Data type: `Stdlib::AbsolutePath`
 
 
 Default value: `$pgbackrest::spool_dir`
+
+##### <a name="-pgbackrest--repository--config_subdir"></a>`config_subdir`
+
+Data type: `Stdlib::AbsolutePath`
+
+
+
+Default value: `$pgbackrest::config_subdir`
 
 ##### <a name="-pgbackrest--repository--dir_mode"></a>`dir_mode`
 
@@ -317,6 +407,14 @@ Data type: `Stdlib::AbsolutePath`
 
 
 Default value: `$pgbackrest::log_dir`
+
+##### <a name="-pgbackrest--repository--uid"></a>`uid`
+
+Data type: `Optional[Integer]`
+
+
+
+Default value: `undef`
 
 ##### <a name="-pgbackrest--repository--exported_ipaddress"></a>`exported_ipaddress`
 
@@ -438,86 +536,6 @@ Data type: `Boolean`
 
 Default value: `true`
 
-##### <a name="-pgbackrest--repository--uid"></a>`uid`
-
-Data type: `Optional[Integer]`
-
-
-
-Default value: `undef`
-
-##### <a name="-pgbackrest--repository--config_dir"></a>`config_dir`
-
-Data type: `Stdlib::AbsolutePath`
-
-
-
-Default value: `$pgbackrest::config_dir`
-
-##### <a name="-pgbackrest--repository--config_file"></a>`config_file`
-
-Data type: `String`
-
-
-
-Default value: `'pgbackrest.conf'`
-
-##### <a name="-pgbackrest--repository--host_group"></a>`host_group`
-
-Data type: `String`
-
-
-
-Default value: `$pgbackrest::host_group`
-
-##### <a name="-pgbackrest--repository--hba_entry_order"></a>`hba_entry_order`
-
-Data type: `Integer`
-
-
-
-Default value: `50`
-
-##### <a name="-pgbackrest--repository--db_name"></a>`db_name`
-
-Data type: `String`
-
-
-
-Default value: `$pgbackrest::db_name`
-
-##### <a name="-pgbackrest--repository--db_user"></a>`db_user`
-
-Data type: `String`
-
-
-
-Default value: `$pgbackrest::db_user`
-
-##### <a name="-pgbackrest--repository--ssh_user"></a>`ssh_user`
-
-Data type: `String`
-
-
-
-Default value: `$pgbackrest::ssh_user`
-
-##### <a name="-pgbackrest--repository--ssh_key_type"></a>`ssh_key_type`
-
-Data type: `String`
-
-
-
-Default value: `'ed25519'`
-
-##### <a name="-pgbackrest--repository--config"></a>`config`
-
-Data type: `Hash`
-
-
-
-Default value: `{}`
-
 ### <a name="pgbackrest--stanza"></a>`pgbackrest::stanza`
 
 Manages configuration for postgresql database backup
@@ -558,6 +576,8 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`archive_timeout`](#-pgbackrest--stanza--archive_timeout)
 * [`binary`](#-pgbackrest--stanza--binary)
 * [`redirect_console`](#-pgbackrest--stanza--redirect_console)
+* [`user`](#-pgbackrest--stanza--user)
+* [`group`](#-pgbackrest--stanza--group)
 * [`manage_dbuser`](#-pgbackrest--stanza--manage_dbuser)
 * [`manage_ssh_keys`](#-pgbackrest--stanza--manage_ssh_keys)
 * [`manage_host_keys`](#-pgbackrest--stanza--manage_host_keys)
@@ -607,11 +627,11 @@ Default value: `1`
 
 ##### <a name="-pgbackrest--stanza--version"></a>`version`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 PostgreSQL major version, e.g. '16'
 
-Default value: `lookup('postgresql::globals::version')`
+Default value: `undef`
 
 ##### <a name="-pgbackrest--stanza--address"></a>`address`
 
@@ -750,6 +770,22 @@ Data type: `Boolean`
 Redirect console output to a log file (make sense especially with custom backup command)
 
 Default value: `false`
+
+##### <a name="-pgbackrest--stanza--user"></a>`user`
+
+Data type: `String`
+
+
+
+Default value: `'postgres'`
+
+##### <a name="-pgbackrest--stanza--group"></a>`group`
+
+Data type: `String`
+
+
+
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--stanza--manage_dbuser"></a>`manage_dbuser`
 

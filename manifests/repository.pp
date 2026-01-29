@@ -3,11 +3,21 @@
 # Configures pgBackRest backup server that can perform remote backups
 #
 # @param fqdn
-# @param backup_dir
-#   Directory for storing backups
+# @param host_group The name of this backup repository
+# @param backup_dir Directory for storing backups
+# @param hba_entry_order
+# @param db_name
+# @param db_user
+# @param ssh_user
+# @param ssh_key_type
+# @param config Hash with configuration options
+# @param config_dir
+# @param config_file
 # @param spool_dir
+# @param config_subdir
 # @param dir_mode
 # @param log_dir
+# @param uid
 # @param exported_ipaddress
 # @param user
 #   Local user account used for running and storing backups in its home dir.
@@ -18,15 +28,21 @@
 # @param host_key_type
 # @param purge_cron
 #   Remove cron jobs not managed by Puppet
-# @param manage_dirs
-#   Whether directories should be managed by Puppet
-#
+# @param manage_dirs Whether directories should be managed by Puppet
+# @param manage_ssh_keys
+# @param manage_host_keys
+# @param manage_pgpass
+# @param manage_hba
+# @param manage_cron
+# @param manage_user
+# @param manage_config
 # @example
 #   include pgbackrest::repository
 class pgbackrest::repository (
   String                          $fqdn = $facts['networking']['fqdn'],
   Stdlib::AbsolutePath            $backup_dir = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath            $spool_dir = $pgbackrest::spool_dir,
+  Stdlib::AbsolutePath            $config_subdir = $pgbackrest::config_subdir,
   String                          $dir_mode = '0750',
   Stdlib::AbsolutePath            $log_dir = $pgbackrest::log_dir,
   String                          $exported_ipaddress = "${facts['networking']['ip']}/32",
@@ -75,6 +91,7 @@ class pgbackrest::repository (
         'global' => {
           'log-path' => $log_dir,
           'spool-path' => $spool_dir,
+          'config-path' => $config_subdir,
         }
     })
 
