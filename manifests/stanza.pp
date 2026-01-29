@@ -55,10 +55,12 @@ class pgbackrest::stanza (
   String                            $db_name              = $pgbackrest::db_name,
   String                            $db_user              = $pgbackrest::db_user,
   String                            $db_cluster           = 'main',
-  String                            $version              = lookup('postgresql::globals::version'),
+  Optional[String]                  $version              = undef,
   Stdlib::AbsolutePath              $db_path              = '/var/lib/postgresql',
   Optional[Pgbackrest::Secret]      $db_password          = undef,
   Optional[String]                  $seed                 = undef,
+  String                            $user                 = 'postgres',
+  String                            $group                = 'postgres',
   Boolean                           $manage_dbuser        = true,
   Boolean                           $manage_ssh_keys      = $pgbackrest::manage_ssh_keys,
   Boolean                           $manage_host_keys     = $pgbackrest::manage_host_keys,
@@ -83,6 +85,11 @@ class pgbackrest::stanza (
   Optional[Stdlib::AbsolutePath]    $binary               = undef,
   Boolean                           $redirect_console     = false,
 ) inherits pgbackrest {
+  $_version = $version ? {
+    undef   => lookup('postgresql::globals::version'),
+    default => $version
+  }
+
   $_cluster = $cluster ? {
     undef   => $id,
     default => $cluster
@@ -119,7 +126,7 @@ class pgbackrest::stanza (
     class { 'pgbackrest::grants':
       db_name => $db_name,
       db_user => $db_user,
-      version => $version,
+      version => $_version,
       require => Postgresql::Server::Database[$db_name],
     }
   }
@@ -203,20 +210,52 @@ class pgbackrest::stanza (
     }
   }
 
+  include pgbackrest::config
+
+  $db_conf = {
+    'log-level-console' => $log_level_console,
+    'pg1-host' => $address,
+    'pg1-path' => "${db_path}/${version}/${db_cluster}",
+    'pg1-port' => $port,
+    'pg1-database' => $db_name,
+    'pg1-user' => $db_user,
+    'pg1-host-user' => $ssh_user,
+  }
+
+  # local config
+  file { "${pgbackrest::config_subdir}/${_cluster}.conf":
+    ensure  => file,
+    owner   => $user,
+    group   => $group,
+    content => epp("${module_name}/cluster.epp", {
+        'cluster' => $_cluster,
+        'config'  => $db_conf,
+    }),
+    require => File[$pgbackrest::config_subdir],
+  }
+
+  # remote config on backup server
+  @@concat::fragment { "${pgbackrest::config_subdir}/${_cluster}.conf":
+    target  => "${pgbackrest::config_subdir}/${_cluster}.conf",
+    content => epp("${module_name}/cluster.epp", {
+        'cluster' => $_cluster,
+        'config'  => $db_conf,
+    }),
+    order   => 50,
+    tag     => "pgbackrest-repository-${host_group}",
+    require => File[$pgbackrest::config_subdir],
+  }
+
   if !empty($backups) {
     $backups.each |String $host_group, Hash $config| {
       @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
-        command => @("CMD"/L),
-        pgbackrest stanza-create --stanza=${_cluster} --log-level-console=${log_level_console} \
-        --pg1-host=${address} --pg1-path=${db_path}/${version}/${db_cluster} --pg1-port=${port} \
-        --pg1-database=${db_name} --pg1-user=${db_user} --pg1-host-user=${ssh_user}
-        | -CMD
+        command => "pgbackrest stanza-create --stanza=${_cluster}",
         path    => ['/usr/bin'],
         cwd     => $backup_dir,
         #onlyif  => "test ! -d ${backup_dir}/backups/${_cluster}",
         tag     => "pgbackrest_stanza_create-${host_group}",
         user    => $backup_user, # note: error output might not be captured
-        require => Package[$pgbackrest::package_name],
+        require => [Package[$pgbackrest::package_name], Class['Pgbackrest::Config']],
       }
 
       # Collect resources exported by pgbackrest::repository

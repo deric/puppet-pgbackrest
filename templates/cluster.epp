@@ -1,0 +1,6 @@
+[<%= $cluster -%>]
+<% $config.each |String $key, $value| { -%>
+<%-  if !empty($value) { -%>
+<%= $key %> = <% if (' ' in $value) { -%>"<%= $value %>"<% } else { -%><%= $value %><% } %>
+<%   } -%>
+<% } %>
