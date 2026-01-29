@@ -91,13 +91,12 @@ class pgbackrest::repository (
         'global' => {
           'log-path' => $log_dir,
           'spool-path' => $spool_dir,
-          'config-path' => $config_subdir,
         }
     })
 
     class { 'pgbackrest::config':
       config_dir    => $config_dir,
-      config_subdir => $pgbackrest::config_subdir,
+      config_subdir => $config_subdir,
       config_file   => $config_file,
       user          => $user,
       group         => $group,
