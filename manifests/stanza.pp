@@ -44,21 +44,24 @@
 #   Redirect console output to a log file (make sense especially with custom backup command)
 # @param user
 # @param group
-# @param manage_dbuser
+# @param manage_dbuser whether db role should be managed
 # @param manage_ssh_keys
 # @param manage_host_keys
 # @param manage_pgpass
 # @param manage_hba
 # @param manage_cron
+# @param manage_user whether unix user account should be managed
 # @param host_key_type
 # @param ssh_key_type
 # @param log_dir
-# @param backup_user
 # @param log_level_file
 # @param compress_type
 # @param compress_level
 # @param process_max
 # @param password_encryption
+# @param user_shell
+# @param user_ensure
+# @param uid user account ID
 #
 # @example
 #   include pgbackrest::stanza
@@ -76,15 +79,16 @@ class pgbackrest::stanza (
   Stdlib::AbsolutePath               $db_path              = '/var/lib/postgresql',
   Optional[Pgbackrest::Secret]       $db_password          = undef,
   Optional[String]                   $seed                 = undef,
-  String                             $user                 = 'postgres',
-  String                             $group                = 'postgres',
+  String                             $user                 = $pgbackrest::backup_user,
+  String                             $group                = $pgbackrest::backup_group,
   Boolean                            $manage_dbuser        = true,
   Boolean                            $manage_ssh_keys      = $pgbackrest::manage_ssh_keys,
   Boolean                            $manage_host_keys     = $pgbackrest::manage_host_keys,
   Boolean                            $manage_pgpass        = $pgbackrest::manage_pgpass,
   Boolean                            $manage_hba           = $pgbackrest::manage_hba,
   Boolean                            $manage_cron          = $pgbackrest::manage_cron,
-  String                             $ssh_user             = 'postgres',
+  Boolean                            $manage_user          = $pgbackrest::manage_user,
+  String                             $ssh_user             = $pgbackrest::ssh_user,
   Integer                            $ssh_port             = 22,
   String                             $host_key_type        = $pgbackrest::host_key_type,
   String                             $ssh_key_type         = 'ed25519',
@@ -92,7 +96,6 @@ class pgbackrest::stanza (
   Stdlib::AbsolutePath               $spool_dir            = $pgbackrest::spool_dir,
   Stdlib::AbsolutePath               $log_dir              = $pgbackrest::log_dir,
   Postgresql::Pg_password_encryption $password_encryption  = $pgbackrest::password_encryption,
-  String                             $backup_user          = $pgbackrest::backup_user,
   Optional[Hash]                     $backups              = undef,
   Pgbackrest::LogLevel               $log_level_console    = 'warn',
   Pgbackrest::LogLevel               $log_level_file       = 'info',
@@ -102,6 +105,9 @@ class pgbackrest::stanza (
   Optional[Integer]                  $archive_timeout      = undef,
   Optional[Stdlib::AbsolutePath]     $binary               = undef,
   Boolean                            $redirect_console     = false,
+  String                             $user_shell = '/bin/bash',
+  Enum['present', 'absent']          $user_ensure = 'present',
+  Optional[Integer]                  $uid = undef,
 ) inherits pgbackrest {
   $_version = $version ? {
     undef   => lookup('postgresql::globals::version'),
@@ -125,6 +131,21 @@ class pgbackrest::stanza (
       true  => $db_password.unwrap,
       false => $db_password
     },
+  }
+
+  if $manage_user {
+    group { $group:
+      ensure => $user_ensure,
+    }
+
+    user { $user:
+      ensure  => $user_ensure,
+      uid     => $uid,
+      gid     => $group, # a primary group
+      home    => $backup_dir,
+      shell   => $user_shell,
+      require => Group[$group],
+    }
   }
 
   if $manage_dbuser {
@@ -212,7 +233,7 @@ class pgbackrest::stanza (
       $ssh_key = $facts['pgbackrest'][$ssh_user]['key']
       @@ssh_authorized_key { "${ssh_user}-${address}":
         ensure => present,
-        user   => $backup_user,
+        user   => $user,
         type   => $facts['pgbackrest'][$ssh_user]['type'],
         key    => $ssh_key,
         tag    => $tags,
@@ -289,7 +310,7 @@ class pgbackrest::stanza (
         cwd     => $backup_dir,
         #onlyif  => "test ! -d ${backup_dir}/backups/${_cluster}",
         tag     => "pgbackrest_stanza_create-${host_group}",
-        user    => $backup_user, # note: error output might not be captured
+        user    => $user, # note: error output might not be captured
         require => [Package[$pgbackrest::package_name], Class['Pgbackrest::Config']],
       }
 
@@ -320,7 +341,7 @@ class pgbackrest::stanza (
               host_group           => $host_group,
               backup_dir           => $backup_dir,
               backup_type          => $backup_type,
-              backup_user          => $backup_user,
+              backup_user          => $user,
               server_address       => $address,
               process_max          => $process_max,
               compress_type        => $compress_type,

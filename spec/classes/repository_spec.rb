@@ -18,13 +18,13 @@ describe 'pgbackrest::repository' do
   it {
     is_expected.to contain_file('/var/lib/pgbackrest')
       .with(ensure: 'directory',
-            owner: 'backup',
-            group: 'backup',
+            owner: 'pgbackup',
+            group: 'pgbackup',
             mode: '0750')
   }
 
-  it { is_expected.to contain_user('backup') }
-  it { is_expected.to contain_group('backup') }
+  it { is_expected.to contain_user('pgbackup') }
+  it { is_expected.to contain_group('pgbackup') }
 
   context 'with manage_user: true' do
     let(:params) do
@@ -193,7 +193,7 @@ describe 'pgbackrest::repository' do
     it 'exports public ssh key' do
       expect(exported_resources).to contain_ssh_authorized_key('pgbackrest-psql.localhost')
         .with(
-          user: 'postgres',
+          user: 'pgbackup',
           type: 'ssh-ed25519',
           key: 'AAAAC3NzaC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
         )
