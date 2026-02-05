@@ -188,7 +188,7 @@ class pgbackrest::repository (
       type        => 'host',
       database    => $pgbackrest::db_name,
       user        => $pgbackrest::db_user,
-      address     => $exported_ipaddress,
+      address     => '0.0.0.0/32',
       auth_method => $password_encryption,
       order       => $hba_entry_order,
       tag         => "pgbackrest-${host_group}",
