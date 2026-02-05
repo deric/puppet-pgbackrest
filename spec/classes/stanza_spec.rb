@@ -126,6 +126,40 @@ describe 'pgbackrest::stanza' do
     }
   end
 
+  context 'with manage db user' do
+    let(:params) do
+      {
+        backups: {
+          common: {
+            incr: {},
+          },
+        },
+        id: 'psql',
+        port: 5433,
+        db_name: 'pg_db',
+        db_user:  'pg_user',
+        db_password: 'TopSecret!',
+        version: '14',
+        manage_dbuser: true,
+      }
+    end
+
+    it {
+      is_expected.to contain_postgresql__server__database('pg_db').with(
+        { 'owner' => 'pg_user' },
+      )
+    }
+
+    it {
+      is_expected.to contain_postgresql__server__role('pg_user').with(
+        {
+          'replication' => true,
+          'superuser'   => false,
+        },
+      )
+    }
+  end
+
   context 'exporting host ssh key' do
     let(:params) do
       {
@@ -165,6 +199,12 @@ describe 'pgbackrest::stanza' do
       expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common').with(
         tag: 'pgbackrest_stanza_create-common',
         command: 'pgbackrest stanza-create --stanza=psql',
+      )
+    }
+
+    it {
+      is_expected.to contain_postgresql__server__database('backup').with(
+        { 'owner' => 'backup' },
       )
     }
   end

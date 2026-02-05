@@ -64,6 +64,7 @@ The following parameters are available in the `pgbackrest` class:
 * [`manage_pgpass`](#-pgbackrest--manage_pgpass)
 * [`manage_hba`](#-pgbackrest--manage_hba)
 * [`manage_cron`](#-pgbackrest--manage_cron)
+* [`manage_user`](#-pgbackrest--manage_user)
 * [`manage_package`](#-pgbackrest--manage_package)
 * [`purge_cron`](#-pgbackrest--purge_cron)
 * [`host_group`](#-pgbackrest--host_group)
@@ -122,6 +123,14 @@ Data type: `Boolean`
 
 Default value: `true`
 
+##### <a name="-pgbackrest--manage_user"></a>`manage_user`
+
+Data type: `Boolean`
+
+
+
+Default value: `true`
+
 ##### <a name="-pgbackrest--manage_package"></a>`manage_package`
 
 Data type: `Boolean`
@@ -166,7 +175,7 @@ Default value: `'pgbackrest'`
 
 Data type: `String`
 
-`installed` or specific version
+`installed` or specific version. Exactly the same version needs to be on stanza and repository server.
 
 Default value: `'present'`
 
@@ -184,7 +193,7 @@ Data type: `String`
 
 DB role for backup operations
 
-Default value: `'postgres'`
+Default value: `'backup'`
 
 ##### <a name="-pgbackrest--backup_user"></a>`backup_user`
 
@@ -192,7 +201,7 @@ Data type: `String`
 
 
 
-Default value: `'backup'`
+Default value: `'pgbackup'`
 
 ##### <a name="-pgbackrest--ssh_user"></a>`ssh_user`
 
@@ -200,7 +209,7 @@ Data type: `String`
 
 
 
-Default value: `'postgres'`
+Default value: `'pgbackup'`
 
 ##### <a name="-pgbackrest--backup_group"></a>`backup_group`
 
@@ -208,7 +217,7 @@ Data type: `String`
 
 Unix account used (mainly) for storing backups
 
-Default value: `'backup'`
+Default value: `'pgbackup'`
 
 ##### <a name="-pgbackrest--config_dir"></a>`config_dir`
 
@@ -611,15 +620,18 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`manage_pgpass`](#-pgbackrest--stanza--manage_pgpass)
 * [`manage_hba`](#-pgbackrest--stanza--manage_hba)
 * [`manage_cron`](#-pgbackrest--stanza--manage_cron)
+* [`manage_user`](#-pgbackrest--stanza--manage_user)
 * [`host_key_type`](#-pgbackrest--stanza--host_key_type)
 * [`ssh_key_type`](#-pgbackrest--stanza--ssh_key_type)
 * [`log_dir`](#-pgbackrest--stanza--log_dir)
-* [`backup_user`](#-pgbackrest--stanza--backup_user)
 * [`log_level_file`](#-pgbackrest--stanza--log_level_file)
 * [`compress_type`](#-pgbackrest--stanza--compress_type)
 * [`compress_level`](#-pgbackrest--stanza--compress_level)
 * [`process_max`](#-pgbackrest--stanza--process_max)
 * [`password_encryption`](#-pgbackrest--stanza--password_encryption)
+* [`user_shell`](#-pgbackrest--stanza--user_shell)
+* [`user_ensure`](#-pgbackrest--stanza--user_ensure)
+* [`uid`](#-pgbackrest--stanza--uid)
 
 ##### <a name="-pgbackrest--stanza--id"></a>`id`
 
@@ -756,7 +768,7 @@ Data type: `String`
 
 user used for ssh connection to the DB instance
 
-Default value: `'postgres'`
+Default value: `$pgbackrest::ssh_user`
 
 ##### <a name="-pgbackrest--stanza--ssh_port"></a>`ssh_port`
 
@@ -805,7 +817,7 @@ Data type: `String`
 
 
 
-Default value: `'postgres'`
+Default value: `$pgbackrest::backup_user`
 
 ##### <a name="-pgbackrest--stanza--group"></a>`group`
 
@@ -813,13 +825,13 @@ Data type: `String`
 
 
 
-Default value: `'postgres'`
+Default value: `$pgbackrest::backup_group`
 
 ##### <a name="-pgbackrest--stanza--manage_dbuser"></a>`manage_dbuser`
 
 Data type: `Boolean`
 
-
+whether db role should be managed
 
 Default value: `true`
 
@@ -863,6 +875,14 @@ Data type: `Boolean`
 
 Default value: `$pgbackrest::manage_cron`
 
+##### <a name="-pgbackrest--stanza--manage_user"></a>`manage_user`
+
+Data type: `Boolean`
+
+whether unix user account should be managed
+
+Default value: `$pgbackrest::manage_user`
+
 ##### <a name="-pgbackrest--stanza--host_key_type"></a>`host_key_type`
 
 Data type: `String`
@@ -886,14 +906,6 @@ Data type: `Stdlib::AbsolutePath`
 
 
 Default value: `$pgbackrest::log_dir`
-
-##### <a name="-pgbackrest--stanza--backup_user"></a>`backup_user`
-
-Data type: `String`
-
-
-
-Default value: `$pgbackrest::backup_user`
 
 ##### <a name="-pgbackrest--stanza--log_level_file"></a>`log_level_file`
 
@@ -934,6 +946,30 @@ Data type: `Postgresql::Pg_password_encryption`
 
 
 Default value: `$pgbackrest::password_encryption`
+
+##### <a name="-pgbackrest--stanza--user_shell"></a>`user_shell`
+
+Data type: `String`
+
+
+
+Default value: `'/bin/bash'`
+
+##### <a name="-pgbackrest--stanza--user_ensure"></a>`user_ensure`
+
+Data type: `Enum['present', 'absent']`
+
+
+
+Default value: `'present'`
+
+##### <a name="-pgbackrest--stanza--uid"></a>`uid`
+
+Data type: `Optional[Integer]`
+
+user account ID
+
+Default value: `undef`
 
 ## Functions
 

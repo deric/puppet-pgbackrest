@@ -15,7 +15,7 @@
 # @param host_key_type
 #   ssh host key fingerprint, one of 'ecdsa', 'ed25519' or 'rsa'. Default: `ed25519`
 # @param package_name System package to be installed
-# @param package_ensure `installed` or specific version
+# @param package_ensure `installed` or specific version. Exactly the same version needs to be on stanza and repository server.
 # @param db_name
 # @param db_user DB role for backup operations
 # @param backup_user
