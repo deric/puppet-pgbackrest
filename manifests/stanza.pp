@@ -212,12 +212,19 @@ class pgbackrest::stanza (
   }
 
   if $manage_ssh_keys {
+    file { "${_home}/.ssh":
+      ensure => directory,
+      owner  => $user,
+      mode   => '0600',
+    }
+
     $privkey_path = pgbackrest::ssh_key_path("${_home}/.ssh", $ssh_key_type, false)
     $pubkey_path = pgbackrest::ssh_key_path("${_home}/.ssh", $ssh_key_type, true)
     exec { "pgbackrest-generate-ssh-key_${ssh_user}":
       command => "su - ${ssh_user} -c \"ssh-keygen -t ${ssh_key_type} -q -N '' -f ${privkey_path}\"",
       path    => ['/usr/bin'],
       onlyif  => "test ! -f ${privkey_path}",
+      require => File["${_home}/.ssh"],
     }
 
     file { '/var/cache/pgbackrest':
