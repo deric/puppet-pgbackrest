@@ -32,7 +32,10 @@ Facter.add(:pgbackrest) do
       File.foreach(keys) do |line|
         if line.match? regexp
           m = line.match regexp
-          res[m[1]] = pgbackrest_fetch_key(m[2])
+          path = m[2]
+          if File.exist?(path)
+            res[m[1]] = pgbackrest_fetch_key(path)
+          end
         end
       end
     end
