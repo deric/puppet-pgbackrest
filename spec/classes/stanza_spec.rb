@@ -70,7 +70,7 @@ describe 'pgbackrest::stanza' do
 
     it 'generates ssh key pair, if missing' do
       is_expected.to contain_exec('pgbackrest-generate-ssh-key_pgbackup').with(
-        command: 'su - pgbackup -c "ssh-keygen -t ed25519 -q -N \'\' -f /var/lib/postgresql/.ssh/id_ed25519"',
+        command: 'su - pgbackup -c "ssh-keygen -t ed25519 -q -N \'\' -f /home/pgbackup/.ssh/id_ed25519"',
       )
     end
 
@@ -95,7 +95,7 @@ describe 'pgbackrest::stanza' do
       is_expected.to contain_ini_setting('pgbackrest-stanza').with(
         {
           ensure: 'present',
-          setting: 'pgbackup', value: '/var/lib/postgresql/.ssh/id_ed25519.pub',
+          setting: 'pgbackup', value: '/home/pgbackup/.ssh/id_ed25519.pub',
           path: '/var/cache/pgbackrest/exported_keys.ini'
         },
       )

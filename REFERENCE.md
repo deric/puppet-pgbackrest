@@ -632,6 +632,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`password_encryption`](#-pgbackrest--stanza--password_encryption)
 * [`user_shell`](#-pgbackrest--stanza--user_shell)
 * [`user_ensure`](#-pgbackrest--stanza--user_ensure)
+* [`user_home`](#-pgbackrest--stanza--user_home)
 * [`uid`](#-pgbackrest--stanza--uid)
 
 ##### <a name="-pgbackrest--stanza--hostname"></a>`hostname`
@@ -971,6 +972,14 @@ Data type: `Enum['present', 'absent']`
 
 
 Default value: `'present'`
+
+##### <a name="-pgbackrest--stanza--user_home"></a>`user_home`
+
+Data type: `Optional[Stdlib::AbsolutePath]`
+
+Path to backup user home directory
+
+Default value: `undef`
 
 ##### <a name="-pgbackrest--stanza--uid"></a>`uid`
 

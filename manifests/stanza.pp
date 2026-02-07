@@ -58,6 +58,7 @@
 # @param password_encryption
 # @param user_shell
 # @param user_ensure
+# @param user_home Path to backup user home directory
 # @param uid user account ID
 #
 # @example
@@ -103,8 +104,9 @@ class pgbackrest::stanza (
   Optional[Integer]                  $archive_timeout      = undef,
   Optional[Stdlib::AbsolutePath]     $binary               = undef,
   Boolean                            $redirect_console     = false,
-  String                             $user_shell = '/bin/bash',
-  Enum['present', 'absent']          $user_ensure = 'present',
+  String                             $user_shell           = '/bin/bash',
+  Enum['present', 'absent']          $user_ensure          = 'present',
+  Optional[Stdlib::AbsolutePath]     $user_home            = undef,
   Optional[Integer]                  $uid = undef,
 ) inherits pgbackrest {
   $_version = $version ? {
@@ -129,6 +131,14 @@ class pgbackrest::stanza (
       true  => $db_password.unwrap,
       false => $db_password
     },
+  }
+
+  $_home = $user_home ? {
+    undef   => $user == 'postgres' ? {
+      true  => '/var/lib/postgresql',
+      false => "/home/${user}",
+    },
+    default => $user_home,
   }
 
   if $manage_user {
@@ -199,8 +209,8 @@ class pgbackrest::stanza (
   }
 
   if $manage_ssh_keys {
-    $privkey_path = pgbackrest::ssh_key_path("${db_path}/.ssh", $ssh_key_type, false)
-    $pubkey_path = pgbackrest::ssh_key_path("${db_path}/.ssh", $ssh_key_type, true)
+    $privkey_path = pgbackrest::ssh_key_path("${_home}/.ssh", $ssh_key_type, false)
+    $pubkey_path = pgbackrest::ssh_key_path("${_home}/.ssh", $ssh_key_type, true)
     exec { "pgbackrest-generate-ssh-key_${ssh_user}":
       command => "su - ${ssh_user} -c \"ssh-keygen -t ${ssh_key_type} -q -N '' -f ${privkey_path}\"",
       path    => ['/usr/bin'],
@@ -250,7 +260,7 @@ class pgbackrest::stanza (
 
     # pgbackrest connects via ssh and then performs local connection
     file_line { "pgbackrest_pgpass_-${hostname}":
-      path  => "${db_path}/.pgpass",
+      path  => "${_home}/.pgpass",
       line  => "*:${port}:${db_name}:${db_user}:${real_password}",
       match => "^*:${port}:${db_name}:${db_user}",
       tag   => $tags,
