@@ -622,6 +622,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`manage_hba`](#-pgbackrest--stanza--manage_hba)
 * [`manage_cron`](#-pgbackrest--stanza--manage_cron)
 * [`manage_user`](#-pgbackrest--stanza--manage_user)
+* [`manage_user_home`](#-pgbackrest--stanza--manage_user_home)
 * [`host_key_type`](#-pgbackrest--stanza--host_key_type)
 * [`ssh_key_type`](#-pgbackrest--stanza--ssh_key_type)
 * [`log_dir`](#-pgbackrest--stanza--log_dir)
@@ -889,9 +890,17 @@ Default value: `$pgbackrest::manage_cron`
 
 Data type: `Boolean`
 
-whether unix user account should be managed
+Whether unix user account should be managed
 
 Default value: `$pgbackrest::manage_user`
+
+##### <a name="-pgbackrest--stanza--manage_user_home"></a>`manage_user_home`
+
+Data type: `Boolean`
+
+Whether user's home directory should be created by puppet
+
+Default value: `true`
 
 ##### <a name="-pgbackrest--stanza--host_key_type"></a>`host_key_type`
 

@@ -47,7 +47,8 @@
 # @param manage_pgpass
 # @param manage_hba
 # @param manage_cron
-# @param manage_user whether unix user account should be managed
+# @param manage_user Whether unix user account should be managed
+# @param manage_user_home Whether user's home directory should be created by puppet
 # @param host_key_type
 # @param ssh_key_type
 # @param log_dir
@@ -87,6 +88,7 @@ class pgbackrest::stanza (
   Boolean                            $manage_hba           = $pgbackrest::manage_hba,
   Boolean                            $manage_cron          = $pgbackrest::manage_cron,
   Boolean                            $manage_user          = $pgbackrest::manage_user,
+  Boolean                            $manage_user_home     = true,
   String                             $ssh_user             = $pgbackrest::ssh_user,
   Integer                            $ssh_port             = 22,
   String                             $host_key_type        = $pgbackrest::host_key_type,
@@ -147,12 +149,13 @@ class pgbackrest::stanza (
     }
 
     user { $user:
-      ensure  => $user_ensure,
-      uid     => $uid,
-      gid     => $group, # a primary group
-      home    => $backup_dir,
-      shell   => $user_shell,
-      require => Group[$group],
+      ensure     => $user_ensure,
+      uid        => $uid,
+      gid        => $group, # a primary group
+      home       => $backup_dir,
+      managehome => $manage_user_home,
+      shell      => $user_shell,
+      require    => Group[$group],
     }
   }
 
