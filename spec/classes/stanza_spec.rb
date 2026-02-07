@@ -58,7 +58,7 @@ describe 'pgbackrest::stanza' do
   context 'manage ssh keys' do
     let(:params) do
       {
-        id: 'psql',
+        hostname: 'psql',
         manage_ssh_keys: true,
         ssh_key_type: 'ed25519',
         version: '14',
@@ -110,7 +110,7 @@ describe 'pgbackrest::stanza' do
             incr: {},
           },
         },
-        id: 'psql',
+        hostname: 'psql',
         port: 5433,
         db_name: 'pg_db',
         db_user:  'pg_user',
@@ -134,7 +134,7 @@ describe 'pgbackrest::stanza' do
             incr: {},
           },
         },
-        id: 'psql',
+        hostname: 'psql',
         port: 5433,
         db_name: 'pg_db',
         db_user:  'pg_user',
@@ -163,7 +163,7 @@ describe 'pgbackrest::stanza' do
   context 'exporting host ssh key' do
     let(:params) do
       {
-        id: 'psql',
+        hostname: 'psql',
         manage_host_keys: true,
         backup_dir: '/backup',
         version: '14',
@@ -188,7 +188,7 @@ describe 'pgbackrest::stanza' do
             full: {},
           },
         },
-        id: 'psql',
+        hostname: 'psql',
         manage_ssh_keys: false,
         manage_host_keys: false,
         version: '14',

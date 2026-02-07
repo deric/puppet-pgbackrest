@@ -2,14 +2,11 @@
 #
 # Manages configuration for postgresql database backup
 #
-# @param id
-#   Unique identified
-# @param cluster
-#   Cluster name in case database has primary and some replicas.
-# @param host_group
-#   Default repository host group
-# @param repo
-#   Set the repository for a command to operate on, default: 1
+# @param hostname Unique identifier
+# @param id unique number in the cluster
+# @param cluster Cluster name in case database has primary and some replicas.
+# @param repo backup repository integer ID
+# @param host_group Default repository host group
 # @param version PostgreSQL major version, e.g. '16'
 # @param address
 # @param port
@@ -66,10 +63,11 @@
 # @example
 #   include pgbackrest::stanza
 class pgbackrest::stanza (
-  String                             $id                   = $facts['networking']['hostname'],
+  String                             $hostname             = $facts['networking']['hostname'],
+  Integer[1,256]                     $id                   = 1,
+  Integer[1,256]                     $repo                 = 1,
   Optional[String]                   $cluster              = undef,
   String                             $host_group           = $pgbackrest::host_group,
-  Integer[1,256]                     $repo                 = 1,
   String                             $address              = $facts['networking']['fqdn'],
   Integer                            $port                 = 5432,
   String                             $db_name              = $pgbackrest::db_name,
@@ -115,7 +113,7 @@ class pgbackrest::stanza (
   }
 
   $_cluster = $cluster ? {
-    undef   => $id,
+    undef   => $hostname,
     default => $cluster
   }
 
@@ -243,7 +241,7 @@ class pgbackrest::stanza (
 
   if $manage_pgpass {
     # Export .pgpass content to pgprobackup catalog
-    @@file_line { "pgbackrest_pgpass_content-${id}":
+    @@file_line { "pgbackrest_pgpass_content-${hostname}":
       path  => "${backup_dir}/.pgpass",
       line  => "${address}:${port}:${db_name}:${db_user}:${real_password}",
       match => "^${regexpescape($address)}:${port}:${db_name}:${db_user}",
@@ -251,14 +249,14 @@ class pgbackrest::stanza (
     }
 
     # pgbackrest connects via ssh and then performs local connection
-    file_line { "pgbackrest_pgpass_-${id}":
+    file_line { "pgbackrest_pgpass_-${hostname}":
       path  => "${db_path}/.pgpass",
       line  => "*:${port}:${db_name}:${db_user}:${real_password}",
       match => "^*:${port}:${db_name}:${db_user}",
       tag   => $tags,
     }
 
-    @@file_line { "pgbackrest_pgpass_replication-${id}":
+    @@file_line { "pgbackrest_pgpass_replication-${hostname}":
       path  => "${backup_dir}/.pgpass",
       line  => "${address}:${port}:replication:${db_user}:${real_password}",
       match => "^${regexpescape($address)}:${port}:replication:${db_user}",
@@ -270,12 +268,12 @@ class pgbackrest::stanza (
 
   $db_conf = {
     'log-level-console' => $log_level_console,
-    'pg1-host' => $address,
-    'pg1-path' => "${db_path}/${_version}/${db_cluster}",
-    'pg1-port' => $port,
-    'pg1-database' => $db_name,
-    'pg1-user' => $db_user,
-    'pg1-host-user' => $ssh_user,
+    "pg${id}-host" => $address,
+    "pg${id}-path" => "${db_path}/${_version}/${db_cluster}",
+    "pg${id}-port" => $port,
+    "pg${id}-database" => $db_name,
+    "pg${id}-user" => $db_user,
+    "pg${id}-host-user" => $ssh_user,
   }
 
   # local config
@@ -333,7 +331,7 @@ class pgbackrest::stanza (
         $config.each |$backup_type, $schedule| {
           # declare cron job, use defaults from stanza
           create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${address}-${backup_type}" => $schedule }, {
-              id                   => $id,
+              hostname             => $hostname,
               repo                 => $repo,
               cluster              => $_cluster,
               db_name              => $db_name,

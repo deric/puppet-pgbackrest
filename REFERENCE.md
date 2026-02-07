@@ -590,10 +590,11 @@ include pgbackrest::stanza
 
 The following parameters are available in the `pgbackrest::stanza` class:
 
+* [`hostname`](#-pgbackrest--stanza--hostname)
 * [`id`](#-pgbackrest--stanza--id)
 * [`cluster`](#-pgbackrest--stanza--cluster)
-* [`host_group`](#-pgbackrest--stanza--host_group)
 * [`repo`](#-pgbackrest--stanza--repo)
+* [`host_group`](#-pgbackrest--stanza--host_group)
 * [`version`](#-pgbackrest--stanza--version)
 * [`address`](#-pgbackrest--stanza--address)
 * [`port`](#-pgbackrest--stanza--port)
@@ -633,13 +634,21 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`user_ensure`](#-pgbackrest--stanza--user_ensure)
 * [`uid`](#-pgbackrest--stanza--uid)
 
-##### <a name="-pgbackrest--stanza--id"></a>`id`
+##### <a name="-pgbackrest--stanza--hostname"></a>`hostname`
 
 Data type: `String`
 
-Unique identified
+Unique identifier
 
 Default value: `$facts['networking']['hostname']`
+
+##### <a name="-pgbackrest--stanza--id"></a>`id`
+
+Data type: `Integer[1,256]`
+
+unique number in the cluster
+
+Default value: `1`
 
 ##### <a name="-pgbackrest--stanza--cluster"></a>`cluster`
 
@@ -649,6 +658,14 @@ Cluster name in case database has primary and some replicas.
 
 Default value: `undef`
 
+##### <a name="-pgbackrest--stanza--repo"></a>`repo`
+
+Data type: `Integer[1,256]`
+
+backup repository integer ID
+
+Default value: `1`
+
 ##### <a name="-pgbackrest--stanza--host_group"></a>`host_group`
 
 Data type: `String`
@@ -656,14 +673,6 @@ Data type: `String`
 Default repository host group
 
 Default value: `$pgbackrest::host_group`
-
-##### <a name="-pgbackrest--stanza--repo"></a>`repo`
-
-Data type: `Integer[1,256]`
-
-Set the repository for a command to operate on, default: 1
-
-Default value: `1`
 
 ##### <a name="-pgbackrest--stanza--version"></a>`version`
 
