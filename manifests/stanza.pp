@@ -268,14 +268,6 @@ class pgbackrest::stanza (
       tag   => $tags,
     }
 
-    # pgbackrest connects via ssh and then performs local connection
-    file_line { "pgbackrest_pgpass_-${hostname}":
-      path  => "${_home}/.pgpass",
-      line  => "*:${port}:${db_name}:${db_user}:${real_password}",
-      match => "^*:${port}:${db_name}:${db_user}",
-      tag   => $tags,
-    }
-
     @@file_line { "pgbackrest_pgpass_replication-${hostname}":
       path  => "${backup_dir}/.pgpass",
       line  => "${address}:${port}:replication:${db_user}:${real_password}",
