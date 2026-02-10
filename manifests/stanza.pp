@@ -246,7 +246,6 @@ class pgbackrest::stanza (
     # Load ssh public key for given local user
     # NOTE: we can't access remote disk from a compile server
     # and exported resources doesn't support Deferred objects
-
     if 'pgbackrest' in $facts and $ssh_user in $facts['pgbackrest'] {
       $ssh_key = $facts['pgbackrest'][$ssh_user]['key']
       @@ssh_authorized_key { "${ssh_user}-${address}":
