@@ -45,7 +45,7 @@ class pgbackrest (
   String               $package_name = 'pgbackrest',
   String               $package_ensure = 'present',
   String               $db_name = 'backup',
-  String               $db_user = 'backup',
+  String               $db_user = 'pgbackup',
   String               $ssh_user = 'pgbackup',
   String               $backup_user = 'pgbackup',
   String               $backup_group = 'pgbackup',

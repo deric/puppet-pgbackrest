@@ -204,7 +204,7 @@ describe 'pgbackrest::stanza' do
 
     it {
       is_expected.to contain_postgresql__server__database('backup').with(
-        { 'owner' => 'backup' },
+        { 'owner' => 'pgbackup' },
       )
     }
   end
