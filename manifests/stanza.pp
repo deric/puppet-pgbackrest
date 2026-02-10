@@ -152,7 +152,7 @@ class pgbackrest::stanza (
       ensure     => $user_ensure,
       uid        => $uid,
       gid        => $group, # a primary group
-      home       => $backup_dir,
+      home       => $_home,
       managehome => $manage_user_home,
       shell      => $user_shell,
       require    => Group[$group],
