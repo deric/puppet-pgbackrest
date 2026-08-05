@@ -19,8 +19,6 @@ class pgbackrest::grants (
   postgresql::server::grant { "pg_read_all_settings_to_${db_user}":
     db          => $db_name,
     role        => $db_user,
-    privilege   => 'EXECUTE',
-    object_type => 'FUNCTION',
     object_name => 'pg_read_all_settings',
   }
 
