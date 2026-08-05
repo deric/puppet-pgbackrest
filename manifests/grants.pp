@@ -16,6 +16,14 @@ class pgbackrest::grants (
     object_name => 'pg_catalog',
   }
 
+  postgresql::server::grant { "pg_read_all_settings_to_${db_user}":
+    db          => $db_name,
+    role        => $db_user,
+    privilege   => 'EXECUTE',
+    object_type => 'FUNCTION',
+    object_name => 'pg_read_all_settings',
+  }
+
   # GRANT EXECUTE ON FUNCTION pg_catalog.current_setting(text) TO backup;
   postgresql::server::grant { "current_setting-to-${db_user}":
     db               => $db_name,
