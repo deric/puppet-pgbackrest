@@ -61,6 +61,7 @@
 # @param user_ensure
 # @param user_home Path to backup user home directory
 # @param uid user account ID
+# @param groups Unix groups to which the $user will belong
 #
 # @example
 #   include pgbackrest::stanza
@@ -110,6 +111,7 @@ class pgbackrest::stanza (
   Enum['present', 'absent']          $user_ensure          = 'present',
   Optional[Stdlib::AbsolutePath]     $user_home            = undef,
   Optional[Integer]                  $uid = undef,
+  Array[String]                      $groups               = ['postgres']
 ) inherits pgbackrest {
   $_version = $version ? {
     undef   => lookup('postgresql::globals::version'),
@@ -153,6 +155,7 @@ class pgbackrest::stanza (
       uid        => $uid,
       gid        => $group, # a primary group
       home       => $_home,
+      groups     => $groups,
       managehome => $manage_user_home,
       shell      => $user_shell,
       require    => Group[$group],
