@@ -49,6 +49,7 @@
 # @param manage_cron
 # @param manage_user Whether unix user account should be managed
 # @param manage_user_home Whether user's home directory should be created by puppet
+# @param manage_archive_cmd Whether archive_command should be set on postgresql instance, changing archive_mode requires restart
 # @param host_key_type
 # @param ssh_key_type
 # @param log_dir
@@ -89,6 +90,7 @@ class pgbackrest::stanza (
   Boolean                            $manage_hba           = $pgbackrest::manage_hba,
   Boolean                            $manage_cron          = $pgbackrest::manage_cron,
   Boolean                            $manage_user          = $pgbackrest::manage_user,
+  Boolean                            $manage_archive_cmd   = true,
   Boolean                            $manage_user_home     = true,
   String                             $ssh_user             = $pgbackrest::ssh_user,
   Integer                            $ssh_port             = 22,
@@ -312,6 +314,16 @@ class pgbackrest::stanza (
     order   => 50,
     tag     => "pgbackrest-repository-${host_group}",
     require => File[$pgbackrest::config_subdir],
+  }
+
+  if $manage_archive_cmd {
+    postgresql::server::config_entry { 'archive_mode':
+      value => 'on', # restart required
+    }
+
+    postgresql::server::config_entry { 'archive_command':
+      value => "pgbackrest --stanza=${_cluster} archive-push %p", # reload
+    }
   }
 
   if !empty($backups) {

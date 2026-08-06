@@ -160,6 +160,58 @@ describe 'pgbackrest::stanza' do
     }
   end
 
+  context 'archive_command' do
+    context 'when manage_archive_cmd is enabled (default)' do
+      let(:params) do
+        {
+          hostname: 'psql',
+          version: '14',
+        }
+      end
+
+      it {
+        is_expected.to contain_postgresql__server__config_entry('archive_mode').with(
+          value: 'on',
+        )
+      }
+
+      it {
+        is_expected.to contain_postgresql__server__config_entry('archive_command').with(
+          value: 'pgbackrest --stanza=psql archive-push %p',
+        )
+      }
+    end
+
+    context 'with a custom cluster name' do
+      let(:params) do
+        {
+          hostname: 'psql',
+          cluster: 'main_cluster',
+          version: '14',
+        }
+      end
+
+      it {
+        is_expected.to contain_postgresql__server__config_entry('archive_command').with(
+          value: 'pgbackrest --stanza=main_cluster archive-push %p',
+        )
+      }
+    end
+
+    context 'when manage_archive_cmd is disabled' do
+      let(:params) do
+        {
+          hostname: 'psql',
+          manage_archive_cmd: false,
+          version: '14',
+        }
+      end
+
+      it { is_expected.not_to contain_postgresql__server__config_entry('archive_mode') }
+      it { is_expected.not_to contain_postgresql__server__config_entry('archive_command') }
+    end
+  end
+
   context 'exporting host ssh key' do
     let(:params) do
       {
