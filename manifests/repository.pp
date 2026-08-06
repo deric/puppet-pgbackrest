@@ -37,6 +37,7 @@
 # @param manage_user
 # @param manage_config
 # @param password_encryption
+# @param user_home Path to backup user home directory on stanza server
 # @example
 #   include pgbackrest::repository
 class pgbackrest::repository (
@@ -72,6 +73,7 @@ class pgbackrest::repository (
   String                             $ssh_key_type = 'ed25519',
   Hash                               $config = {},
   Postgresql::Pg_password_encryption $password_encryption = $pgbackrest::password_encryption,
+  Optional[Stdlib::AbsolutePath]     $user_home = undef,
 ) inherits pgbackrest {
   if $manage_user {
     group { $group:
@@ -236,6 +238,14 @@ class pgbackrest::repository (
 
     Concat::Fragment <<| tag == "pgbackrest-repository-${host_group}" |>>
 
+    $_home = $user_home ? {
+      undef   => $ssh_user == 'postgres' ? {
+        true  => '/var/lib/postgresql',
+        false => "/home/${ssh_user}",
+      },
+      default => $user_home,
+    }
+
     # Load ssh public key for given local user
     # NOTE: we can't access remote disk from a compile server
     # and exported resources doesn't support Deferred objects
@@ -247,6 +257,7 @@ class pgbackrest::repository (
         type   => $facts['pgbackrest'][$user]['type'],
         key    => $ssh_key,
         tag    => "pgbackrest-repository-${host_group}",
+        target => "${_home}/.ssh/authorized_keys",
       }
     }
   }

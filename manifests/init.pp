@@ -8,13 +8,14 @@
 # @param manage_pgpass
 # @param manage_hba
 # @param manage_cron
+# @param manage_user
 # @param manage_package Whether package should be installed by puppet
 # @param purge_cron
 # @param host_group
 # @param host_key_type
 #   ssh host key fingerprint, one of 'ecdsa', 'ed25519' or 'rsa'. Default: `ed25519`
 # @param package_name System package to be installed
-# @param package_ensure `installed` or specific version
+# @param package_ensure `installed` or specific version. Exactly the same version needs to be on stanza and repository server.
 # @param db_name
 # @param db_user DB role for backup operations
 # @param backup_user
@@ -37,16 +38,17 @@ class pgbackrest (
   Boolean              $manage_hba = true,
   Boolean              $manage_cron = true,
   Boolean              $manage_package = true,
+  Boolean              $manage_user = true,
   Boolean              $purge_cron = true,
   String               $host_group = 'common',
   Pgbackrest::HostKey  $host_key_type = 'ed25519',
   String               $package_name = 'pgbackrest',
   String               $package_ensure = 'present',
   String               $db_name = 'backup',
-  String               $db_user = 'backup',
-  String               $ssh_user = 'postgres',
-  String               $backup_user = 'backup',
-  String               $backup_group = 'backup',
+  String               $db_user = 'pgbackup',
+  String               $ssh_user = 'pgbackup',
+  String               $backup_user = 'pgbackup',
+  String               $backup_group = 'pgbackup',
   Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',
   Stdlib::AbsolutePath $config_subdir = '/etc/pgbackrest/conf.d',
   Stdlib::AbsolutePath $backup_dir = '/var/lib/pgbackrest',

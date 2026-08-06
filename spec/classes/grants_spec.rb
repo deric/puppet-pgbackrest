@@ -20,4 +20,14 @@ describe 'pgbackrest::grants' do
   end
 
   it { is_expected.to compile }
+
+  it {
+    is_expected.to contain_postgresql__server__grant_role("pg_read_all_settings_to_#{params[:db_user]}")
+      .with(group: 'pg_read_all_settings', role: params[:db_user])
+  }
+
+  it {
+    is_expected.to contain_postgresql_psql("grant_role:pg_read_all_settings_to_#{params[:db_user]}")
+      .with(command: "GRANT \"pg_read_all_settings\" TO \"#{params[:db_user]}\"")
+  }
 end
