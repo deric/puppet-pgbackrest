@@ -193,7 +193,7 @@ Data type: `String`
 
 DB role for backup operations
 
-Default value: `'backup'`
+Default value: `'pgbackup'`
 
 ##### <a name="-pgbackrest--backup_user"></a>`backup_user`
 
@@ -315,6 +315,7 @@ The following parameters are available in the `pgbackrest::repository` class:
 * [`manage_user`](#-pgbackrest--repository--manage_user)
 * [`manage_config`](#-pgbackrest--repository--manage_config)
 * [`password_encryption`](#-pgbackrest--repository--password_encryption)
+* [`user_home`](#-pgbackrest--repository--user_home)
 
 ##### <a name="-pgbackrest--repository--fqdn"></a>`fqdn`
 
@@ -572,6 +573,14 @@ Data type: `Postgresql::Pg_password_encryption`
 
 Default value: `$pgbackrest::password_encryption`
 
+##### <a name="-pgbackrest--repository--user_home"></a>`user_home`
+
+Data type: `Optional[Stdlib::AbsolutePath]`
+
+Path to backup user home directory on stanza server
+
+Default value: `undef`
+
 ### <a name="pgbackrest--stanza"></a>`pgbackrest::stanza`
 
 Manages configuration for postgresql database backup
@@ -623,6 +632,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`manage_cron`](#-pgbackrest--stanza--manage_cron)
 * [`manage_user`](#-pgbackrest--stanza--manage_user)
 * [`manage_user_home`](#-pgbackrest--stanza--manage_user_home)
+* [`manage_archive_cmd`](#-pgbackrest--stanza--manage_archive_cmd)
 * [`host_key_type`](#-pgbackrest--stanza--host_key_type)
 * [`ssh_key_type`](#-pgbackrest--stanza--ssh_key_type)
 * [`log_dir`](#-pgbackrest--stanza--log_dir)
@@ -635,6 +645,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`user_ensure`](#-pgbackrest--stanza--user_ensure)
 * [`user_home`](#-pgbackrest--stanza--user_home)
 * [`uid`](#-pgbackrest--stanza--uid)
+* [`groups`](#-pgbackrest--stanza--groups)
 
 ##### <a name="-pgbackrest--stanza--hostname"></a>`hostname`
 
@@ -902,6 +913,14 @@ Whether user's home directory should be created by puppet
 
 Default value: `true`
 
+##### <a name="-pgbackrest--stanza--manage_archive_cmd"></a>`manage_archive_cmd`
+
+Data type: `Boolean`
+
+Whether archive_command should be set on postgresql instance, changing archive_mode requires restart
+
+Default value: `true`
+
 ##### <a name="-pgbackrest--stanza--host_key_type"></a>`host_key_type`
 
 Data type: `String`
@@ -997,6 +1016,14 @@ Data type: `Optional[Integer]`
 user account ID
 
 Default value: `undef`
+
+##### <a name="-pgbackrest--stanza--groups"></a>`groups`
+
+Data type: `Array[String]`
+
+Unix groups to which the $user will belong
+
+Default value: `['postgres']`
 
 ## Functions
 
