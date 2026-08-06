@@ -239,9 +239,9 @@ class pgbackrest::repository (
     Concat::Fragment <<| tag == "pgbackrest-repository-${host_group}" |>>
 
     $_home = $user_home ? {
-      undef   => $user == 'postgres' ? {
+      undef   => $ssh_user == 'postgres' ? {
         true  => '/var/lib/postgresql',
-        false => "/home/${user}",
+        false => "/home/${ssh_user}",
       },
       default => $user_home,
     }
