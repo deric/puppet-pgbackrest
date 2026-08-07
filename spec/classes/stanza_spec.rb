@@ -102,6 +102,57 @@ describe 'pgbackrest::stanza' do
     }
   end
 
+  context 'manage ssh keys with default ssh_user' do
+    let(:params) do
+      {
+        hostname: 'psql',
+        manage_ssh_keys: true,
+        ssh_key_type: 'ed25519',
+        version: '14',
+        db_path: '/var/lib/postgresql',
+      }
+    end
+
+    it 'generates the ssh key pair under the ssh_user home, not the backup user home' do
+      is_expected.to contain_exec('pgbackrest-generate-ssh-key_postgres').with(
+        command: 'su - postgres -c "ssh-keygen -t ed25519 -q -N \'\' -f /var/lib/postgresql/.ssh/id_ed25519"',
+      )
+    end
+
+    it {
+      is_expected.to contain_file('/var/lib/postgresql/.ssh')
+        .with(ensure: 'directory',
+            owner: 'postgres')
+    }
+
+    it {
+      expect(exported_resources).to contain_ssh_authorized_key('postgres-psql.localhost')
+        .with(
+          user: 'pgbackup',
+          type: 'ssh-ed25519',
+          key: 'AAAABBBBCC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
+          tag: ['pgbackrest-common'],
+        )
+    }
+
+    it {
+      is_expected.to contain_file('/var/cache/pgbackrest')
+        .with(ensure: 'directory',
+            owner: 'postgres',
+            group: 'postgres')
+    }
+
+    it {
+      is_expected.to contain_ini_setting('pgbackrest-stanza').with(
+        {
+          ensure: 'present',
+          setting: 'postgres', value: '/var/lib/postgresql/.ssh/id_ed25519.pub',
+          path: '/var/cache/pgbackrest/exported_keys.ini'
+        },
+      )
+    }
+  end
+
   context 'with plain text password' do
     let(:params) do
       {

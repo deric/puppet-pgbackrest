@@ -209,7 +209,7 @@ Data type: `String`
 
 
 
-Default value: `'pgbackup'`
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--backup_group"></a>`backup_group`
 

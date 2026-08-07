@@ -193,7 +193,7 @@ describe 'pgbackrest::repository' do
     it 'exports public ssh key' do
       expect(exported_resources).to contain_ssh_authorized_key('pgbackrest-psql.localhost')
         .with(
-          user: 'pgbackup',
+          user: 'postgres',
           type: 'ssh-ed25519',
           key: 'AAAAC3NzaC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
         )
