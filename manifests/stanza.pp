@@ -295,12 +295,9 @@ class pgbackrest::stanza (
 
   $db_conf = {
     'log-level-console' => $log_level_console,
-    "pg${id}-host" => $address,
     "pg${id}-path" => "${db_path}/${_version}/${db_cluster}",
-    "pg${id}-port" => $port,
     "pg${id}-database" => $db_name,
     "pg${id}-user" => $db_user,
-    "pg${id}-host-user" => $ssh_user,
   }
 
   # local config
