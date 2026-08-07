@@ -112,8 +112,8 @@ class pgbackrest::stanza (
   String                             $user_shell           = '/bin/bash',
   Enum['present', 'absent']          $user_ensure          = 'present',
   Optional[Stdlib::AbsolutePath]     $user_home            = undef,
-  Optional[Integer]                  $uid = undef,
-  Array[String]                      $groups               = ['postgres']
+  Optional[Integer]                  $uid                  = undef,
+  Array[String]                      $groups               = []
 ) inherits pgbackrest {
   $_version = $version ? {
     undef   => lookup('postgresql::globals::version'),
@@ -147,6 +147,12 @@ class pgbackrest::stanza (
     default => $user_home,
   }
 
+  # home of the account used for the ssh connection (may differ from $user/$_home)
+  $_ssh_home = $ssh_user == 'postgres' ? {
+    true  => '/var/lib/postgresql',
+    false => "/home/${ssh_user}",
+  }
+
   if $manage_user {
     group { $group:
       ensure => $user_ensure,
@@ -157,10 +163,15 @@ class pgbackrest::stanza (
       uid        => $uid,
       gid        => $group, # a primary group
       home       => $_home,
-      groups     => $groups,
       managehome => $manage_user_home,
       shell      => $user_shell,
       require    => Group[$group],
+    }
+
+    if !empty($groups) {
+      User<| title == $user |> {
+        groups => $groups,
+      }
     }
   }
 
@@ -217,19 +228,19 @@ class pgbackrest::stanza (
   }
 
   if $manage_ssh_keys {
-    file { "${_home}/.ssh":
+    file { "${_ssh_home}/.ssh":
       ensure => directory,
-      owner  => $user,
+      owner  => $ssh_user,
       mode   => '0600',
     }
 
-    $privkey_path = pgbackrest::ssh_key_path("${_home}/.ssh", $ssh_key_type, false)
-    $pubkey_path = pgbackrest::ssh_key_path("${_home}/.ssh", $ssh_key_type, true)
+    $privkey_path = pgbackrest::ssh_key_path("${_ssh_home}/.ssh", $ssh_key_type, false)
+    $pubkey_path = pgbackrest::ssh_key_path("${_ssh_home}/.ssh", $ssh_key_type, true)
     exec { "pgbackrest-generate-ssh-key_${ssh_user}":
       command => "su - ${ssh_user} -c \"ssh-keygen -t ${ssh_key_type} -q -N '' -f ${privkey_path}\"",
       path    => ['/usr/bin'],
       onlyif  => "test ! -f ${privkey_path}",
-      require => File["${_home}/.ssh"],
+      require => File["${_ssh_home}/.ssh"],
     }
 
     file { '/var/cache/pgbackrest':
@@ -284,12 +295,9 @@ class pgbackrest::stanza (
 
   $db_conf = {
     'log-level-console' => $log_level_console,
-    "pg${id}-host" => $address,
     "pg${id}-path" => "${db_path}/${_version}/${db_cluster}",
-    "pg${id}-port" => $port,
     "pg${id}-database" => $db_name,
     "pg${id}-user" => $db_user,
-    "pg${id}-host-user" => $ssh_user,
   }
 
   # local config
@@ -322,6 +330,7 @@ class pgbackrest::stanza (
     }
 
     postgresql::server::config_entry { 'archive_command':
+      # command is executed by postgres user
       value => "pgbackrest --stanza=${_cluster} archive-push %p", # reload
     }
   }
@@ -340,6 +349,12 @@ class pgbackrest::stanza (
 
       # Collect resources exported by pgbackrest::repository
       Postgresql::Server::Pg_hba_rule <<| tag == "pgbackrest-${host_group}" |>>
+
+      # Import repository connection details (repo${repo}-host, repo${repo}-host-user,
+      # repo${repo}-host-port) into this instance's pgbackrest.conf
+      Ini_setting <<| tag == "pgbackrest-repository-${host_group}" |>> {
+        require => Class['Pgbackrest::Config'],
+      }
 
       if $manage_ssh_keys {
         # Import public key from backup server as authorized

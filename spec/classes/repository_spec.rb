@@ -193,7 +193,7 @@ describe 'pgbackrest::repository' do
     it 'exports public ssh key' do
       expect(exported_resources).to contain_ssh_authorized_key('pgbackrest-psql.localhost')
         .with(
-          user: 'pgbackup',
+          user: 'postgres',
           type: 'ssh-ed25519',
           key: 'AAAAC3NzaC1lZDI1NTE5AAAAIN1UTKrM47QYBXJg0cIgrausN4o93I17AIj4K3i+5yS4',
         )
@@ -224,5 +224,78 @@ describe 'pgbackrest::repository' do
         },
       )
     }
+  end
+
+  context 'exports repository connection details' do
+    let(:params) do
+      {
+        user: 'pgbackup',
+        host_group: 'common',
+      }
+    end
+
+    it 'exports repo1-host' do
+      expect(exported_resources).to contain_ini_setting('repo1-host-psql.localhost').with(
+        ensure: 'present',
+        path: '/etc/pgbackrest/pgbackrest.conf',
+        section: 'global',
+        setting: 'repo1-host',
+        value: 'psql.localhost',
+        tag: ['pgbackrest-repository-common'],
+      )
+    end
+
+    it 'exports repo1-host-user' do
+      expect(exported_resources).to contain_ini_setting('repo1-host-user-psql.localhost').with(
+        ensure: 'present',
+        path: '/etc/pgbackrest/pgbackrest.conf',
+        section: 'global',
+        setting: 'repo1-host-user',
+        value: 'pgbackup',
+        tag: ['pgbackrest-repository-common'],
+      )
+    end
+
+    it 'exports repo1-host-port' do
+      expect(exported_resources).to contain_ini_setting('repo1-host-port-psql.localhost').with(
+        ensure: 'present',
+        path: '/etc/pgbackrest/pgbackrest.conf',
+        section: 'global',
+        setting: 'repo1-host-port',
+        value: 22,
+        tag: ['pgbackrest-repository-common'],
+      )
+    end
+
+    context 'with a non-default repo id and ssh_port' do
+      let(:params) do
+        {
+          user: 'pgbackup',
+          host_group: 'offsite',
+          repo: 2,
+          ssh_port: 2222,
+        }
+      end
+
+      it 'exports repo2-host settings tagged for the matching host_group' do
+        expect(exported_resources).to contain_ini_setting('repo2-host-psql.localhost').with(
+          setting: 'repo2-host',
+          value: 'psql.localhost',
+          tag: ['pgbackrest-repository-offsite'],
+        )
+
+        expect(exported_resources).to contain_ini_setting('repo2-host-user-psql.localhost').with(
+          setting: 'repo2-host-user',
+          value: 'pgbackup',
+          tag: ['pgbackrest-repository-offsite'],
+        )
+
+        expect(exported_resources).to contain_ini_setting('repo2-host-port-psql.localhost').with(
+          setting: 'repo2-host-port',
+          value: 2222,
+          tag: ['pgbackrest-repository-offsite'],
+        )
+      end
+    end
   end
 end

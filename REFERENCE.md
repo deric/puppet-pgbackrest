@@ -209,7 +209,7 @@ Data type: `String`
 
 
 
-Default value: `'pgbackup'`
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--backup_group"></a>`backup_group`
 
@@ -285,6 +285,8 @@ The following parameters are available in the `pgbackrest::repository` class:
 
 * [`fqdn`](#-pgbackrest--repository--fqdn)
 * [`host_group`](#-pgbackrest--repository--host_group)
+* [`repo`](#-pgbackrest--repository--repo)
+* [`ssh_port`](#-pgbackrest--repository--ssh_port)
 * [`backup_dir`](#-pgbackrest--repository--backup_dir)
 * [`hba_entry_order`](#-pgbackrest--repository--hba_entry_order)
 * [`db_name`](#-pgbackrest--repository--db_name)
@@ -332,6 +334,22 @@ Data type: `String`
 The name of this backup repository
 
 Default value: `$pgbackrest::host_group`
+
+##### <a name="-pgbackrest--repository--repo"></a>`repo`
+
+Data type: `Integer[1,256]`
+
+Repository integer ID, matches the `repo` parameter used on the stanza (DB) side
+
+Default value: `1`
+
+##### <a name="-pgbackrest--repository--ssh_port"></a>`ssh_port`
+
+Data type: `Integer`
+
+ssh port used by DB instances to connect to this repository
+
+Default value: `22`
 
 ##### <a name="-pgbackrest--repository--backup_dir"></a>`backup_dir`
 
@@ -1023,7 +1041,7 @@ Data type: `Array[String]`
 
 Unix groups to which the $user will belong
 
-Default value: `['postgres']`
+Default value: `[]`
 
 ## Functions
 

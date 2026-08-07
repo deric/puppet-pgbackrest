@@ -31,6 +31,7 @@ include pgbackrest::repository
 
 repository config:
 ```yaml
+pgbackrest::repository::host_group: eu-west
 pgbackrest::repository::config:
   global:
     repo1-path: /backup/pgbackrest
