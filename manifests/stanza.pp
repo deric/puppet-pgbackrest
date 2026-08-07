@@ -350,6 +350,12 @@ class pgbackrest::stanza (
       # Collect resources exported by pgbackrest::repository
       Postgresql::Server::Pg_hba_rule <<| tag == "pgbackrest-${host_group}" |>>
 
+      # Import repository connection details (repo${repo}-host, repo${repo}-host-user,
+      # repo${repo}-host-port) into this instance's pgbackrest.conf
+      Ini_setting <<| tag == "pgbackrest-repository-${host_group}" |>> {
+        require => Class['Pgbackrest::Config'],
+      }
+
       if $manage_ssh_keys {
         # Import public key from backup server as authorized
         Ssh_authorized_key <<| tag == "pgbackrest-repository-${host_group}" |>> {

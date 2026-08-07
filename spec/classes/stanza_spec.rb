@@ -298,6 +298,8 @@ describe 'pgbackrest::stanza' do
       }
     end
 
+    it { is_expected.to compile }
+
     it {
       expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common').with(
         tag: 'pgbackrest_stanza_create-common',
