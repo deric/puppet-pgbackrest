@@ -228,10 +228,13 @@ class pgbackrest::stanza (
   }
 
   if $manage_ssh_keys {
-    file { "${_ssh_home}/.ssh":
-      ensure => directory,
-      owner  => $ssh_user,
-      mode   => '0600',
+    $_ssh_dir = "${_ssh_home}/.ssh"
+    unless defined(File[$_ssh_dir]) {
+      file { $_ssh_dir:
+        ensure => directory,
+        owner  => $ssh_user,
+        mode   => '0600',
+      }
     }
 
     $privkey_path = pgbackrest::ssh_key_path("${_ssh_home}/.ssh", $ssh_key_type, false)
