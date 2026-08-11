@@ -233,7 +233,7 @@ class pgbackrest::stanza (
       file { $_ssh_dir:
         ensure => directory,
         owner  => $ssh_user,
-        mode   => '0600',
+        mode   => '0700',
       }
     }
 
