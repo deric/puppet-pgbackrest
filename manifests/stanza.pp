@@ -104,7 +104,7 @@ class pgbackrest::stanza (
   Pgbackrest::LogLevel               $log_level_console    = 'warn',
   Pgbackrest::LogLevel               $log_level_file       = 'info',
   Pgbackrest::CompressType           $compress_type        = 'gz',
-  Optional[Integer[0,9]]             $compress_level       = undef,
+  Optional[Pgbackrest::CompressLevel] $compress_level       = undef,
   Optional[Integer[1,999]]           $process_max          = undef,
   Optional[Integer]                  $archive_timeout      = undef,
   Optional[Stdlib::AbsolutePath]     $binary               = undef,

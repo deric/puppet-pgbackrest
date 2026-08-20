@@ -23,7 +23,7 @@ define pgbackrest::cron_backup (
   Pgbackrest::Minute              $minute = 0,
   Pgbackrest::Month               $month = '*',
   Pgbackrest::Weekday             $weekday = '*',
-  Optional[Integer[0,9]]          $compress_level = undef,
+  Optional[Pgbackrest::CompressLevel] $compress_level = undef,
   Optional[Integer]               $archive_timeout = undef,
   Optional[Pgbackrest::Monthday]  $monthday = undef,
   Optional[String]                $binary = undef,

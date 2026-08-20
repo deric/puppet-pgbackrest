@@ -9,7 +9,10 @@
 <% if $process_max { -%>
 <%= " --process-max=${process_max}" -%>
 <% } -%>
-<%= " --compress-type=${compress_type} --compress-level=${compress_level}" -%>
+<%= " --compress-type=${compress_type}" -%>
+<% if $compress_level { -%>
+<%= " --compress-level=${compress_level}" -%>
+<% } -%>
 <% if $archive_timeout { -%>
 <%= " --archive-timeout=${archive_timeout}" -%>
 <% } -%>
