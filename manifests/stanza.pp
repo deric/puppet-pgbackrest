@@ -10,7 +10,9 @@
 #   All members of the cluster must use the same value (it becomes the stanza name).
 # @param primary Whether this instance exports per-cluster singleton resources
 #   (stanza-create command, backup cron jobs). Exactly one member of the cluster
-#   must be primary. Defaults to `true` when `id` is 1.
+#   must be primary. When unset, the role is detected at runtime from the
+#   `pgbackrest.in_recovery` fact (`SELECT pg_is_in_recovery()`), so it follows
+#   failovers; before PostgreSQL is up it falls back to `true` when `id` is 1.
 # @param repo backup repository integer ID
 # @param host_group Default repository host group
 # @param version PostgreSQL major version, e.g. '16'
@@ -120,11 +122,20 @@ class pgbackrest::stanza (
   Optional[Stdlib::AbsolutePath]     $user_home            = undef,
   Optional[Integer]                  $uid                  = undef,
   Array[String]                      $groups               = [],
-  Boolean                            $primary              = $id == 1,
+  Optional[Boolean]                  $primary              = undef,
 ) inherits pgbackrest {
   $_id = $id ? {
     undef   => pgbackrest::instance_id($facts['networking']['hostname']),
     default => $id,
+  }
+
+  if $primary !~ Undef {
+    $_primary = $primary
+  } elsif 'pgbackrest' in $facts and 'in_recovery' in $facts['pgbackrest'] {
+    $_primary = !$facts['pgbackrest']['in_recovery']
+  } else {
+    # PostgreSQL not running yet (e.g. initial deployment)
+    $_primary = $_id == 1
   }
 
   $_version = $version ? {
@@ -371,7 +382,7 @@ class pgbackrest::stanza (
     $backups.each |String $host_group, Hash $config| {
       # stanza-create is per-cluster, exporting it from every member would
       # race for the stanza lock on the repository
-      if $primary {
+      if $_primary {
         @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
           command => "pgbackrest stanza-create --stanza=${_cluster}",
           path    => ['/usr/bin', '/bin'],
@@ -408,7 +419,7 @@ class pgbackrest::stanza (
 
       # backups run per-stanza (pgBackRest picks the primary or a standby
       # itself), so only one member exports the cron jobs
-      if $manage_cron and $primary {
+      if $manage_cron and $_primary {
         $config.each |$backup_type, $schedule| {
           # declare cron job, use defaults from stanza
           create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${address}-${backup_type}" => $schedule }, {

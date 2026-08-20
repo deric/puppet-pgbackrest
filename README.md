@@ -51,9 +51,13 @@ pgbackrest::repository::config:
 
 All members of a PostgreSQL cluster share one stanza. Set the same `cluster`
 name on every member and give each one a unique `id` (the pg index used in the
-repository configuration). The member with `id: 1` is considered the primary
-and is the only one exporting per-cluster resources (backup cron jobs and the
-`stanza-create` command); this can be overridden with the `primary` parameter.
+repository configuration). The primary is detected at runtime via the
+`pgbackrest.in_recovery` fact (`SELECT pg_is_in_recovery()`), so the role
+follows failovers automatically; while PostgreSQL is not running yet (e.g.
+initial deployment) the member with `id: 1` is assumed to be the primary.
+Only the primary exports per-cluster resources (backup cron jobs and the
+`stanza-create` command); detection can be overridden with the `primary`
+parameter.
 
 Primary (psql01a):
 ```yaml

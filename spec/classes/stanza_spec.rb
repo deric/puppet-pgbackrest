@@ -398,4 +398,53 @@ describe 'pgbackrest::stanza' do
         .with_content(%r{pg2-host-port = 2222})
     end
   end
+
+  context 'primary role detected from pg_is_in_recovery fact' do
+    let(:facts) { os_facts.merge('pgbackrest' => { 'in_recovery' => false }) }
+    let(:params) do
+      {
+        backups: {
+          common: {
+            full: {},
+          },
+        },
+        hostname: 'psql2',
+        cluster: 'psql',
+        id: 2,
+        version: '14',
+      }
+    end
+
+    it 'exports per-cluster singleton resources despite id != 1' do
+      expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
+      expect(exported_resources).to contain_cron('pgbackrest_full_psql.localhost-common')
+    end
+  end
+
+  context 'standby role detected from pg_is_in_recovery fact' do
+    let(:facts) { os_facts.merge('pgbackrest' => { 'in_recovery' => true }) }
+    let(:params) do
+      {
+        backups: {
+          common: {
+            full: {},
+          },
+        },
+        hostname: 'psql',
+        cluster: 'psql',
+        id: 1,
+        version: '14',
+      }
+    end
+
+    it 'does not export per-cluster singleton resources despite id == 1' do
+      expect(exported_resources).not_to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
+      expect(exported_resources).not_to contain_cron('pgbackrest_full_psql.localhost-common')
+    end
+
+    it 'explicit primary parameter overrides the fact' do
+      params[:primary] = true
+      expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
+    end
+  end
 end

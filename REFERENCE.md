@@ -678,13 +678,13 @@ Default value: `$facts['networking']['hostname']`
 
 ##### <a name="-pgbackrest--stanza--id"></a>`id`
 
-Data type: `Integer[1,256]`
+Data type: `Optional[Integer[1,256]]`
 
 Unique number of this instance within the cluster, used as the pg index
 (`pg<id>-*` options) in the repository configuration. The primary should use 1,
 each replica a distinct higher number.
 
-Default value: `1`
+Default value: `undef`
 
 ##### <a name="-pgbackrest--stanza--cluster"></a>`cluster`
 
@@ -697,13 +697,15 @@ Default value: `undef`
 
 ##### <a name="-pgbackrest--stanza--primary"></a>`primary`
 
-Data type: `Boolean`
+Data type: `Optional[Boolean]`
 
 Whether this instance exports per-cluster singleton resources
 (stanza-create command, backup cron jobs). Exactly one member of the cluster
-must be primary. Defaults to `true` when `id` is 1.
+must be primary. When unset, the role is detected at runtime from the
+`pgbackrest.in_recovery` fact (`SELECT pg_is_in_recovery()`), so it follows
+failovers; before PostgreSQL is up it falls back to `true` when `id` is 1.
 
-Default value: `$id == 1`
+Default value: `undef`
 
 ##### <a name="-pgbackrest--stanza--repo"></a>`repo`
 
