@@ -152,7 +152,9 @@ class pgbackrest::repository (
     }
 
     # Add public ssh keys from DB instances as authorized keys
-    Ssh_authorized_key <<| tag == "pgbackrest-${host_group}-instance" |>>
+    Ssh_authorized_key <<| tag == "pgbackrest-${host_group}" |>> {
+      require => File["${backup_dir}/.ssh"],
+    }
   }
 
   if $manage_pgpass {
