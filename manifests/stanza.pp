@@ -74,7 +74,7 @@
 #   include pgbackrest::stanza
 class pgbackrest::stanza (
   String                             $hostname             = $facts['networking']['hostname'],
-  Integer[1,256]                     $id                   = 1,
+  Optional[Integer[1,256]]           $id                   = undef,
   Integer[1,256]                     $repo                 = 1,
   Optional[String]                   $cluster              = undef,
   String                             $host_group           = $pgbackrest::host_group,
@@ -122,6 +122,11 @@ class pgbackrest::stanza (
   Array[String]                      $groups               = [],
   Boolean                            $primary              = $id == 1,
 ) inherits pgbackrest {
+  $_id = $id ? {
+    undef   => pgbackrest::instance_id($facts['networking']['hostname']),
+    default => $id,
+  }
+
   $_version = $version ? {
     undef   => lookup('postgresql::globals::version'),
     default => $version
@@ -305,9 +310,9 @@ class pgbackrest::stanza (
 
   $db_conf = {
     'log-level-console' => $log_level_console,
-    "pg${id}-path" => "${db_path}/${_version}/${db_cluster}",
-    "pg${id}-database" => $db_name,
-    "pg${id}-user" => $db_user,
+    "pg${_id}-path" => "${db_path}/${_version}/${db_cluster}",
+    "pg${_id}-database" => $db_name,
+    "pg${_id}-user" => $db_user,
   }
 
   # local config
@@ -326,17 +331,17 @@ class pgbackrest::stanza (
   # the same [cluster] section with disjoint pg<id>-* keys. pgBackRest merges
   # every file in conf.d, so primary and replicas end up in a single stanza.
   $remote_conf = {
-    "pg${id}-host"      => $address,
-    "pg${id}-host-user" => $ssh_user,
-    "pg${id}-path"      => "${db_path}/${_version}/${db_cluster}",
-    "pg${id}-port"      => String($port),
-    "pg${id}-database"  => $db_name,
-    "pg${id}-user"      => $db_user,
+    "pg${_id}-host"      => $address,
+    "pg${_id}-host-user" => $ssh_user,
+    "pg${_id}-path"      => "${db_path}/${_version}/${db_cluster}",
+    "pg${_id}-port"      => String($port),
+    "pg${_id}-database"  => $db_name,
+    "pg${_id}-user"      => $db_user,
   }
 
   $_remote_conf = $ssh_port == 22 ? {
     true  => $remote_conf,
-    false => $remote_conf + { "pg${id}-host-port" => String($ssh_port) },
+    false => $remote_conf + { "pg${_id}-host-port" => String($ssh_port) },
   }
 
   @@file { "${pgbackrest::config_subdir}/${_cluster}-${hostname}.conf":
@@ -407,7 +412,7 @@ class pgbackrest::stanza (
         $config.each |$backup_type, $schedule| {
           # declare cron job, use defaults from stanza
           create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${address}-${backup_type}" => $schedule }, {
-              id                   => $id,
+              id                   => $_id,
               hostname             => $hostname,
               repo                 => $repo,
               cluster              => $_cluster,

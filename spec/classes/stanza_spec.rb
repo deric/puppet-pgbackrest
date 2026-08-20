@@ -291,6 +291,7 @@ describe 'pgbackrest::stanza' do
             full: {},
           },
         },
+        id: 1,
         hostname: 'psql',
         db_user: 'pgbackup',
         manage_dbuser: true,
