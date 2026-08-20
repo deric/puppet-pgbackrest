@@ -682,7 +682,12 @@ Data type: `Optional[Integer[1,256]]`
 
 Unique number of this instance within the cluster, used as the pg index
 (`pg<id>-*` options) in the repository configuration. The primary should use 1,
-each replica a distinct higher number.
+each replica a distinct higher number. When unset it is derived from the
+hostname suffix (see `pgbackrest::instance_id`), or defaults to 1 when no
+`cluster` is set. NOTE: pgBackRest requires `pg1-*` options to exist —
+repository-side commands (stanza-create, backup) fail without a member
+with id 1, so a cluster whose only managed member would derive a higher
+id must set `id: 1` explicitly.
 
 Default value: `undef`
 

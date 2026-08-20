@@ -51,7 +51,12 @@ pgbackrest::repository::config:
 
 All members of a PostgreSQL cluster share one stanza. Set the same `cluster`
 name on every member and give each one a unique `id` (the pg index used in the
-repository configuration). The primary is detected at runtime via the
+repository configuration). pgBackRest requires `pg1-*` options to be present:
+repository-side commands (`stanza-create`, `backup`) fail with
+`command requires option: pg1-path` when no member exports id 1, so every
+cluster must contain a managed member with `id` 1 — if the only member's
+hostname would derive a higher id (e.g. a leftover `b` node after
+decommissioning the `a` node), set `id: 1` explicitly. The primary is detected at runtime via the
 `pgbackrest.in_recovery` fact (`SELECT pg_is_in_recovery()`), so the role
 follows failovers automatically; while PostgreSQL is not running yet (e.g.
 initial deployment) the member with `id: 1` is assumed to be the primary.

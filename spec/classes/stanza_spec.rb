@@ -399,6 +399,42 @@ describe 'pgbackrest::stanza' do
     end
   end
 
+  context 'standalone instance with a b-suffixed hostname' do
+    let(:facts) do
+      os_facts.merge(networking: os_facts[:networking].merge('hostname' => 'psql01b'))
+    end
+    let(:params) do
+      {
+        hostname: 'psql01b',
+        version: '14',
+      }
+    end
+
+    it 'uses pg1 regardless of the hostname suffix' do
+      is_expected.to contain_file('/etc/pgbackrest/conf.d/psql01b.conf')
+        .with_content(%r{pg1-path})
+        .without_content(%r{pg2-})
+    end
+  end
+
+  context 'clustered instance with a b-suffixed hostname' do
+    let(:facts) do
+      os_facts.merge(networking: os_facts[:networking].merge('hostname' => 'psql01b'))
+    end
+    let(:params) do
+      {
+        hostname: 'psql01b',
+        cluster: 'psql01',
+        version: '14',
+      }
+    end
+
+    it 'derives pg2 from the hostname suffix' do
+      is_expected.to contain_file('/etc/pgbackrest/conf.d/psql01.conf')
+        .with_content(%r{pg2-path})
+    end
+  end
+
   context 'primary role detected from pg_is_in_recovery fact' do
     let(:facts) { os_facts.merge('pgbackrest' => { 'in_recovery' => false }) }
     let(:params) do
