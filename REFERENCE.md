@@ -637,6 +637,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`backup_dir`](#-pgbackrest--stanza--backup_dir)
 * [`spool_dir`](#-pgbackrest--stanza--spool_dir)
 * [`backups`](#-pgbackrest--stanza--backups)
+* [`config`](#-pgbackrest--stanza--config)
 * [`ssh_user`](#-pgbackrest--stanza--ssh_user)
 * [`ssh_port`](#-pgbackrest--stanza--ssh_port)
 * [`log_level_console`](#-pgbackrest--stanza--log_level_console)
@@ -824,6 +825,15 @@ Data type: `Optional[Hash]`
 
 
 Default value: `undef`
+
+##### <a name="-pgbackrest--stanza--config"></a>`config`
+
+Data type: `Hash[String, Hash]`
+
+Options written to /etc/pgbackrest/pgbackrest.conf, keyed by section,
+e.g. `{ 'global' => { 'archive-async' => 'y', 'process-max' => 8 } }`
+
+Default value: `{}`
 
 ##### <a name="-pgbackrest--stanza--ssh_user"></a>`ssh_user`
 

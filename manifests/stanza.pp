@@ -39,6 +39,9 @@
 #  Path where transient data is stored (should be on local filesystem)
 #  Default: /var/spool/pgbackrest
 # @param backups
+# @param config
+#   Options written to /etc/pgbackrest/pgbackrest.conf, keyed by section,
+#   e.g. `{ 'global' => { 'archive-async' => 'y', 'process-max' => 8 } }`
 # @param ssh_user
 #   user used for ssh connection to the DB instance
 # @param ssh_port
@@ -114,6 +117,7 @@ class pgbackrest::stanza (
   Stdlib::AbsolutePath               $log_dir              = $pgbackrest::log_dir,
   Postgresql::Pg_password_encryption $password_encryption  = $pgbackrest::password_encryption,
   Optional[Hash]                     $backups              = undef,
+  Hash[String, Hash]                 $config               = {},
   Pgbackrest::LogLevel               $log_level_console    = 'warn',
   Pgbackrest::LogLevel               $log_level_file       = 'info',
   Pgbackrest::CompressType           $compress_type        = 'gz',
@@ -328,7 +332,9 @@ class pgbackrest::stanza (
     }
   }
 
-  include pgbackrest::config
+  class { 'pgbackrest::config':
+    config => $config,
+  }
 
   $db_conf = {
     'log-level-console' => $log_level_console,

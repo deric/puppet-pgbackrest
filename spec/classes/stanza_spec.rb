@@ -27,6 +27,42 @@ describe 'pgbackrest::stanza' do
 
   it { is_expected.to contain_class('pgbackrest::install') }
 
+  context 'with global options' do
+    let(:params) do
+      {
+        version: '14',
+        config: {
+          'global' => {
+            'archive-async' => 'y',
+            'process-max' => 8,
+          },
+        },
+      }
+    end
+
+    it { is_expected.to compile }
+
+    it {
+      is_expected.to contain_ini_setting('global archive-async').with(
+        ensure: 'present',
+        path: '/etc/pgbackrest/pgbackrest.conf',
+        section: 'global',
+        setting: 'archive-async',
+        value: 'y',
+      )
+    }
+
+    it {
+      is_expected.to contain_ini_setting('global process-max').with(
+        ensure: 'present',
+        path: '/etc/pgbackrest/pgbackrest.conf',
+        section: 'global',
+        setting: 'process-max',
+        value: 8,
+      )
+    }
+  end
+
   context 'backup db' do
     let(:params) do
       {
