@@ -83,7 +83,7 @@ class pgbackrest::stanza (
   Optional[String]                   $seed                 = undef,
   String                             $user                 = $pgbackrest::backup_user,
   String                             $group                = $pgbackrest::backup_group,
-  Boolean                            $manage_dbuser        = true,
+  Boolean                            $manage_dbuser        = false,
   Boolean                            $manage_ssh_keys      = $pgbackrest::manage_ssh_keys,
   Boolean                            $manage_host_keys     = $pgbackrest::manage_host_keys,
   Boolean                            $manage_pgpass        = $pgbackrest::manage_pgpass,

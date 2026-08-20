@@ -292,6 +292,8 @@ describe 'pgbackrest::stanza' do
           },
         },
         hostname: 'psql',
+        db_user: 'pgbackup',
+        manage_dbuser: true,
         manage_ssh_keys: false,
         manage_host_keys: false,
         version: '14',
