@@ -342,9 +342,11 @@ class pgbackrest::stanza (
     $backups.each |String $host_group, Hash $config| {
       @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
         command => "pgbackrest stanza-create --stanza=${_cluster}",
-        path    => ['/usr/bin'],
+        path    => ['/usr/bin', '/bin'],
         cwd     => $backup_dir,
-        #onlyif  => "test ! -d ${backup_dir}/backups/${_cluster}",
+        # `pgbackrest info` takes no locks, so an already-created stanza is
+        # skipped even while a backup or archive-push holds the stanza lock
+        onlyif  => "pgbackrest info --stanza=${_cluster} | grep -q 'missing stanza'",
         tag     => "pgbackrest_stanza_create-${host_group}",
         user    => $user, # note: error output might not be captured
         require => [Package[$pgbackrest::package_name], Class['Pgbackrest::Config']],

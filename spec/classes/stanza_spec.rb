@@ -306,6 +306,7 @@ describe 'pgbackrest::stanza' do
       expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common').with(
         tag: 'pgbackrest_stanza_create-common',
         command: 'pgbackrest stanza-create --stanza=psql',
+        onlyif: "pgbackrest info --stanza=psql | grep -q 'missing stanza'",
       )
     }
 
