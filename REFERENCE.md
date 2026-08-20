@@ -31,6 +31,7 @@
 ### Data types
 
 * [`Pgbackrest::BackupType`](#Pgbackrest--BackupType)
+* [`Pgbackrest::CompressLevel`](#Pgbackrest--CompressLevel): Compression level, negative values are supported by zst (valid range: -7 to 22)
 * [`Pgbackrest::CompressType`](#Pgbackrest--CompressType)
 * [`Pgbackrest::HostKey`](#Pgbackrest--HostKey): ssh host keys
 * [`Pgbackrest::Hour`](#Pgbackrest--Hour)
@@ -193,7 +194,7 @@ Data type: `String`
 
 DB role for backup operations
 
-Default value: `'pgbackup'`
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--backup_user"></a>`backup_user`
 
@@ -620,6 +621,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`hostname`](#-pgbackrest--stanza--hostname)
 * [`id`](#-pgbackrest--stanza--id)
 * [`cluster`](#-pgbackrest--stanza--cluster)
+* [`primary`](#-pgbackrest--stanza--primary)
 * [`repo`](#-pgbackrest--stanza--repo)
 * [`host_group`](#-pgbackrest--stanza--host_group)
 * [`version`](#-pgbackrest--stanza--version)
@@ -677,7 +679,9 @@ Default value: `$facts['networking']['hostname']`
 
 Data type: `Integer[1,256]`
 
-unique number in the cluster
+Unique number of this instance within the cluster, used as the pg index
+(`pg<id>-*` options) in the repository configuration. The primary should use 1,
+each replica a distinct higher number.
 
 Default value: `1`
 
@@ -686,8 +690,19 @@ Default value: `1`
 Data type: `Optional[String]`
 
 Cluster name in case database has primary and some replicas.
+All members of the cluster must use the same value (it becomes the stanza name).
 
 Default value: `undef`
+
+##### <a name="-pgbackrest--stanza--primary"></a>`primary`
+
+Data type: `Boolean`
+
+Whether this instance exports per-cluster singleton resources
+(stanza-create command, backup cron jobs). Exactly one member of the cluster
+must be primary. Defaults to `true` when `id` is 1.
+
+Default value: `$id == 1`
 
 ##### <a name="-pgbackrest--stanza--repo"></a>`repo`
 
@@ -873,7 +888,7 @@ Data type: `Boolean`
 
 whether db role should be managed
 
-Default value: `true`
+Default value: `false`
 
 ##### <a name="-pgbackrest--stanza--manage_ssh_keys"></a>`manage_ssh_keys`
 
@@ -981,7 +996,7 @@ Default value: `'gz'`
 
 ##### <a name="-pgbackrest--stanza--compress_level"></a>`compress_level`
 
-Data type: `Optional[Integer[0,9]]`
+Data type: `Optional[Pgbackrest::CompressLevel]`
 
 
 
@@ -1082,6 +1097,12 @@ Data type: `Boolean`
 The Pgbackrest::BackupType data type.
 
 Alias of `Enum['full', 'incr', 'delta']`
+
+### <a name="Pgbackrest--CompressLevel"></a>`Pgbackrest::CompressLevel`
+
+Compression level, negative values are supported by zst (valid range: -7 to 22)
+
+Alias of `Integer[-7, 22]`
 
 ### <a name="Pgbackrest--CompressType"></a>`Pgbackrest::CompressType`
 

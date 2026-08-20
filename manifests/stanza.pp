@@ -3,8 +3,14 @@
 # Manages configuration for postgresql database backup
 #
 # @param hostname Unique identifier
-# @param id unique number in the cluster
+# @param id Unique number of this instance within the cluster, used as the pg index
+#   (`pg<id>-*` options) in the repository configuration. The primary should use 1,
+#   each replica a distinct higher number.
 # @param cluster Cluster name in case database has primary and some replicas.
+#   All members of the cluster must use the same value (it becomes the stanza name).
+# @param primary Whether this instance exports per-cluster singleton resources
+#   (stanza-create command, backup cron jobs). Exactly one member of the cluster
+#   must be primary. Defaults to `true` when `id` is 1.
 # @param repo backup repository integer ID
 # @param host_group Default repository host group
 # @param version PostgreSQL major version, e.g. '16'
@@ -113,7 +119,8 @@ class pgbackrest::stanza (
   Enum['present', 'absent']          $user_ensure          = 'present',
   Optional[Stdlib::AbsolutePath]     $user_home            = undef,
   Optional[Integer]                  $uid                  = undef,
-  Array[String]                      $groups               = []
+  Array[String]                      $groups               = [],
+  Boolean                            $primary              = $id == 1,
 ) inherits pgbackrest {
   $_version = $version ? {
     undef   => lookup('postgresql::globals::version'),
@@ -315,16 +322,33 @@ class pgbackrest::stanza (
     require => File[$pgbackrest::config_subdir],
   }
 
-  # remote config on backup server
-  @@concat::fragment { "${pgbackrest::config_subdir}/${_cluster}.conf":
-    target  => "${pgbackrest::config_subdir}/${_cluster}.conf",
+  # Remote config on backup server: one file per cluster member, all declaring
+  # the same [cluster] section with disjoint pg<id>-* keys. pgBackRest merges
+  # every file in conf.d, so primary and replicas end up in a single stanza.
+  $remote_conf = {
+    "pg${id}-host"      => $address,
+    "pg${id}-host-user" => $ssh_user,
+    "pg${id}-path"      => "${db_path}/${_version}/${db_cluster}",
+    "pg${id}-port"      => String($port),
+    "pg${id}-database"  => $db_name,
+    "pg${id}-user"      => $db_user,
+  }
+
+  $_remote_conf = $ssh_port == 22 ? {
+    true  => $remote_conf,
+    false => $remote_conf + { "pg${id}-host-port" => String($ssh_port) },
+  }
+
+  @@file { "${pgbackrest::config_subdir}/${_cluster}-${hostname}.conf":
+    ensure  => file,
+    owner   => $user,
+    group   => $group,
+    mode    => '0640',
     content => epp("${module_name}/cluster.epp", {
         'cluster' => $_cluster,
-        'config'  => $db_conf,
+        'config'  => $_remote_conf,
     }),
-    order   => 50,
-    tag     => "pgbackrest-repository-${host_group}",
-    require => File[$pgbackrest::config_subdir],
+    tag     => $tags,
   }
 
   if $manage_archive_cmd {
@@ -340,16 +364,20 @@ class pgbackrest::stanza (
 
   if !empty($backups) {
     $backups.each |String $host_group, Hash $config| {
-      @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
-        command => "pgbackrest stanza-create --stanza=${_cluster}",
-        path    => ['/usr/bin', '/bin'],
-        cwd     => $backup_dir,
-        # `pgbackrest info` takes no locks, so an already-created stanza is
-        # skipped even while a backup or archive-push holds the stanza lock
-        onlyif  => "pgbackrest info --stanza=${_cluster} | grep -q 'missing stanza'",
-        tag     => "pgbackrest_stanza_create-${host_group}",
-        user    => $user, # note: error output might not be captured
-        require => [Package[$pgbackrest::package_name], Class['Pgbackrest::Config']],
+      # stanza-create is per-cluster, exporting it from every member would
+      # race for the stanza lock on the repository
+      if $primary {
+        @@exec { "pgbackrest_stanza_create_${address}-${host_group}":
+          command => "pgbackrest stanza-create --stanza=${_cluster}",
+          path    => ['/usr/bin', '/bin'],
+          cwd     => $backup_dir,
+          # `pgbackrest info` takes no locks, so an already-created stanza is
+          # skipped even while a backup or archive-push holds the stanza lock
+          onlyif  => "pgbackrest info --stanza=${_cluster} | grep -q 'missing stanza'",
+          tag     => "pgbackrest_stanza_create-${host_group}",
+          user    => $user, # note: error output might not be captured
+          require => [Package[$pgbackrest::package_name], Class['Pgbackrest::Config']],
+        }
       }
 
       # Collect resources exported by pgbackrest::repository
@@ -373,7 +401,9 @@ class pgbackrest::stanza (
         Sshkey <<| tag == "pgbackrest-repository-${host_group}" |>>
       }
 
-      if $manage_cron {
+      # backups run per-stanza (pgBackRest picks the primary or a standby
+      # itself), so only one member exports the cron jobs
+      if $manage_cron and $primary {
         $config.each |$backup_type, $schedule| {
           # declare cron job, use defaults from stanza
           create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${address}-${backup_type}" => $schedule }, {

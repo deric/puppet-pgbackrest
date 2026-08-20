@@ -169,7 +169,12 @@ class pgbackrest::repository (
     File_line <<| tag == "pgbackrest-${host_group}" |>>
   }
 
-  Exec <<| tag == "pgbackrest_stanza_create-${host_group}" |>>
+  # Collect per-member cluster configs exported by pgbackrest::stanza.
+  # pgBackRest merges all files in conf.d, so members of the same cluster
+  # (primary + replicas) combine into a single stanza section. They must be
+  # in place before stanza-create runs.
+  File <<| tag == "pgbackrest-${host_group}" |>>
+  -> Exec <<| tag == "pgbackrest_stanza_create-${host_group}" |>>
 
   if $manage_host_keys {
     # Import db instances host keys
@@ -239,8 +244,6 @@ class pgbackrest::repository (
       show_diff => true,
       require   => File['/var/cache/pgbackrest'],
     }
-
-    Concat::Fragment <<| tag == "pgbackrest-repository-${host_group}" |>>
 
     $_home = $user_home ? {
       undef   => $ssh_user == 'postgres' ? {

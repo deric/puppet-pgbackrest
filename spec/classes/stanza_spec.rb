@@ -311,9 +311,90 @@ describe 'pgbackrest::stanza' do
     }
 
     it {
+      expect(exported_resources).to contain_cron('pgbackrest_full_psql.localhost-common').with(
+        tag: 'pgbackrest-common',
+      )
+    }
+
+    it 'exports member config for the repository' do
+      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-psql.conf')
+        .with(tag: ['pgbackrest-common'])
+        .with_content(%r{\[psql\]})
+        .with_content(%r{pg1-host = psql\.localhost})
+        .with_content(%r{pg1-host-user = postgres})
+        .with_content(%r{pg1-path = /var/lib/postgresql/14/main})
+        .with_content(%r{pg1-port = 5432})
+    end
+
+    it 'keeps pg-host out of the local config' do
+      is_expected.to contain_file('/etc/pgbackrest/conf.d/psql.conf')
+        .with_content(%r{pg1-path = /var/lib/postgresql/14/main})
+        .without_content(%r{pg1-host})
+    end
+
+    it {
       is_expected.to contain_postgresql__server__database('backup').with(
         { 'owner' => 'pgbackup' },
       )
     }
+  end
+
+  context 'standby replica' do
+    let(:params) do
+      {
+        backups: {
+          common: {
+            incr: {},
+          },
+        },
+        hostname: 'psql2',
+        cluster: 'psql',
+        id: 2,
+        version: '14',
+      }
+    end
+
+    it { is_expected.to compile }
+
+    it 'exports member config with its own pg index' do
+      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-psql2.conf')
+        .with(tag: ['pgbackrest-common'])
+        .with_content(%r{\[psql\]})
+        .with_content(%r{pg2-host = psql\.localhost})
+        .with_content(%r{pg2-path = /var/lib/postgresql/14/main})
+        .without_content(%r{pg1-})
+    end
+
+    it 'does not export per-cluster singleton resources' do
+      expect(exported_resources).not_to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
+      expect(exported_resources).not_to contain_cron('pgbackrest_incr_psql.localhost-common')
+    end
+
+    it 'writes local config with its own pg index and no pg-host' do
+      is_expected.to contain_file('/etc/pgbackrest/conf.d/psql.conf')
+        .with_content(%r{pg2-path = /var/lib/postgresql/14/main})
+        .without_content(%r{pg2-host})
+    end
+
+    it 'still imports repository connection settings and exports pgpass entries' do
+      expect(exported_resources).to contain_file_line('pgbackrest_pgpass_content-psql2')
+    end
+  end
+
+  context 'standby replica with custom ssh port' do
+    let(:params) do
+      {
+        hostname: 'psql2',
+        cluster: 'psql',
+        id: 2,
+        ssh_port: 2222,
+        version: '14',
+      }
+    end
+
+    it 'exports member config with pg-host-port' do
+      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-psql2.conf')
+        .with_content(%r{pg2-host-port = 2222})
+    end
   end
 end

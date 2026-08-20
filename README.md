@@ -47,6 +47,57 @@ pgbackrest::repository::config:
     compress-type: lz4
 ```
 
+## Primary with replicas (standby servers)
+
+All members of a PostgreSQL cluster share one stanza. Set the same `cluster`
+name on every member and give each one a unique `id` (the pg index used in the
+repository configuration). The member with `id: 1` is considered the primary
+and is the only one exporting per-cluster resources (backup cron jobs and the
+`stanza-create` command); this can be overridden with the `primary` parameter.
+
+Primary (psql01a):
+```yaml
+pgbackrest::stanza::cluster: psql01
+pgbackrest::stanza::id: 1
+pgbackrest::stanza::backups:
+  eu-west:
+    incr:
+      hour: 3
+```
+
+Standby (psql01b) — declare the same `backups` host groups (this assigns the
+repositories; schedules are only exported by the primary):
+```yaml
+pgbackrest::stanza::cluster: psql01
+pgbackrest::stanza::id: 2
+pgbackrest::stanza::backups:
+  eu-west:
+    incr:
+      hour: 3
+```
+
+Each member exports its own `conf.d/<cluster>-<hostname>.conf` file to the
+repository containing only its `pg<id>-*` options. pgBackRest merges all files
+in `conf.d`, so the repository ends up with a single stanza section:
+
+```ini
+[psql01]
+pg1-host = psql01a.example.com
+...
+pg2-host = psql01b.example.com
+...
+```
+
+To take backups from the standby instead of the primary, set
+`backup-standby: 'y'` in the repository's `global` config section.
+
+Caveats:
+- Role passwords are replicated from the primary, so when `manage_pgpass` is
+  enabled set the same `db_password` (or `seed`) on all members, otherwise
+  the standby exports a `.pgpass` entry with a password that doesn't match.
+- Remove any hand-managed stanza section for the same cluster from the
+  repository configuration, otherwise pgBackRest may see duplicated options.
+
 ## How Does This Work
 
 ### pgbackrest::stanza
