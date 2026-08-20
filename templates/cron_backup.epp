@@ -5,7 +5,7 @@
 <%= "/usr/bin/pgbackrest" -%>
 <% }  -%>
 <%= " backup --repo=${repo} --stanza=${cluster} --type=${backup_type}" -%>
-<%= " --pg-user ${db_user}" -%>
+<%= " --pg${id}-user ${db_user}" -%>
 <% if $process_max { -%>
 <%= " --process-max=${process_max}" -%>
 <% } -%>

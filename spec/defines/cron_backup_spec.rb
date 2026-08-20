@@ -9,6 +9,7 @@ describe 'pgbackrest::cron_backup' do
   let(:params) do
     {
       hostname: 'psql01a',
+      id: 1,
       repo: 1,
       cluster: 'psql01',
       host_group: 'common',
