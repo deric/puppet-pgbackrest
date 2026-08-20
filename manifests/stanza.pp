@@ -344,7 +344,7 @@ class pgbackrest::stanza (
     false => $remote_conf + { "pg${_id}-host-port" => String($ssh_port) },
   }
 
-  @@file { "${pgbackrest::config_subdir}/${_cluster}-${hostname}.conf":
+  @@file { "${pgbackrest::config_subdir}/${_cluster}-${_id}.conf":
     ensure  => file,
     owner   => $user,
     group   => $group,

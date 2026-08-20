@@ -318,7 +318,7 @@ describe 'pgbackrest::stanza' do
     }
 
     it 'exports member config for the repository' do
-      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-psql.conf')
+      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-1.conf')
         .with(tag: ['pgbackrest-common'])
         .with_content(%r{\[psql\]})
         .with_content(%r{pg1-host = psql\.localhost})
@@ -358,7 +358,7 @@ describe 'pgbackrest::stanza' do
     it { is_expected.to compile }
 
     it 'exports member config with its own pg index' do
-      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-psql2.conf')
+      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-2.conf')
         .with(tag: ['pgbackrest-common'])
         .with_content(%r{\[psql\]})
         .with_content(%r{pg2-host = psql\.localhost})
@@ -394,7 +394,7 @@ describe 'pgbackrest::stanza' do
     end
 
     it 'exports member config with pg-host-port' do
-      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-psql2.conf')
+      expect(exported_resources).to contain_file('/etc/pgbackrest/conf.d/psql-2.conf')
         .with_content(%r{pg2-host-port = 2222})
     end
   end
