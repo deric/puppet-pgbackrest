@@ -76,6 +76,21 @@ pgbackrest::stanza::backups:
       hour: 3
 ```
 
+When cluster members follow a `<name><NN><member>` naming convention
+(psql01a, psql01b, ...), the `pgbackrest::instance_id` function derives the
+member id from the hostname, so it doesn't have to be maintained per host in
+Hiera. Since Hiera data cannot call functions, wire it up in a profile:
+
+```puppet
+class profile::pgbackrest_stanza {
+  class { 'pgbackrest::stanza':
+    id => pgbackrest::instance_id($facts['networking']['hostname']),
+    # psql01a.de -> 1, psql01b.de -> 2, psql02a.de -> 1
+    # hostnames without a member letter (psql01) -> 1
+  }
+}
+```
+
 Each member exports its own `conf.d/<cluster>-<hostname>.conf` file to the
 repository containing only its `pg<id>-*` options. pgBackRest merges all files
 in `conf.d`, so the repository ends up with a single stanza section:

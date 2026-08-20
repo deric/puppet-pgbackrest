@@ -26,6 +26,7 @@
 
 ### Functions
 
+* [`pgbackrest::instance_id`](#pgbackrest--instance_id): Derives the cluster member id from a hostname suffix letter, so that cluster members named by the `<cluster><NN><member>` convention get a st
 * [`pgbackrest::ssh_key_path`](#pgbackrest--ssh_key_path): https://github.com/puppetlabs/puppet-specifications/blob/master/language/func-api.md#the-4x-api
 
 ### Data types
@@ -1059,6 +1060,50 @@ Unix groups to which the $user will belong
 Default value: `[]`
 
 ## Functions
+
+### <a name="pgbackrest--instance_id"></a>`pgbackrest::instance_id`
+
+Type: Ruby 4.x API
+
+Derives the cluster member id from a hostname suffix letter, so that
+cluster members named by the `<cluster><NN><member>` convention get
+a stable pg index: psql01a -> 1, psql01b -> 2, psql02a -> 1.
+
+#### Examples
+
+##### 
+
+```puppet
+pgbackrest::instance_id('psql01a.de') # => 1
+pgbackrest::instance_id('psql01b.de') # => 2
+pgbackrest::instance_id('psql02a.de') # => 1
+```
+
+#### `pgbackrest::instance_id(String[1] $hostname)`
+
+Derives the cluster member id from a hostname suffix letter, so that
+cluster members named by the `<cluster><NN><member>` convention get
+a stable pg index: psql01a -> 1, psql01b -> 2, psql02a -> 1.
+
+Returns: `Integer[1,26]` Position in the alphabet of the letter following the trailing digits
+of the first dot-separated label ('a' => 1, 'b' => 2, ...).
+Returns 1 when the hostname has no such suffix (standalone server).
+
+##### Examples
+
+###### 
+
+```puppet
+pgbackrest::instance_id('psql01a.de') # => 1
+pgbackrest::instance_id('psql01b.de') # => 2
+pgbackrest::instance_id('psql02a.de') # => 1
+```
+
+##### `hostname`
+
+Data type: `String[1]`
+
+Host name or FQDN, e.g. 'psql01b' or 'psql01b.de.example.com'
 
 ### <a name="pgbackrest--ssh_key_path"></a>`pgbackrest::ssh_key_path`
 
