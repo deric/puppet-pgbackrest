@@ -2,6 +2,7 @@
 # A cron job is exported from a database server, but could be executed elsewhere.
 # Typically on a catalog (backup) server.
 define pgbackrest::cron_backup (
+  Integer[1,256]                  $id,
   String                          $hostname,
   String                          $cluster,
   Integer[1,256]                  $repo,
@@ -22,7 +23,7 @@ define pgbackrest::cron_backup (
   Pgbackrest::Minute              $minute = 0,
   Pgbackrest::Month               $month = '*',
   Pgbackrest::Weekday             $weekday = '*',
-  Optional[Integer[0,9]]          $compress_level = undef,
+  Optional[Pgbackrest::CompressLevel] $compress_level = undef,
   Optional[Integer]               $archive_timeout = undef,
   Optional[Pgbackrest::Monthday]  $monthday = undef,
   Optional[String]                $binary = undef,
@@ -30,6 +31,7 @@ define pgbackrest::cron_backup (
 ) {
   @@cron { "pgbackrest_${backup_type}_${server_address}-${host_group}":
     command  => epp('pgbackrest/cron_backup.epp', {
+        id                => $id,
         hostname          => $hostname,
         repo              => $repo,
         cluster           => $cluster,

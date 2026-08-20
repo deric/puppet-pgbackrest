@@ -39,6 +39,18 @@ Facter.add(:pgbackrest) do
         end
       end
     end
+
+    # Runtime role of the local PostgreSQL instance; absent when the server
+    # is not running (or psql is not installed), so Puppet can fall back to
+    # a static default.
+    if Facter::Core::Execution.which('psql')
+      out = Facter::Core::Execution.execute(
+        %(su - postgres -c "psql -t -A -c 'SELECT pg_is_in_recovery()'"),
+        on_fail: nil,
+      )
+      res['in_recovery'] = out.strip == 't' if out && ['t', 'f'].include?(out.strip)
+    end
+
     res
   end
 end

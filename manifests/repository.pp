@@ -4,6 +4,8 @@
 #
 # @param fqdn
 # @param host_group The name of this backup repository
+# @param repo Repository integer ID, matches the `repo` parameter used on the stanza (DB) side
+# @param ssh_port ssh port used by DB instances to connect to this repository
 # @param backup_dir Directory for storing backups
 # @param hba_entry_order
 # @param db_name
@@ -42,6 +44,8 @@
 #   include pgbackrest::repository
 class pgbackrest::repository (
   String                             $fqdn = $facts['networking']['fqdn'],
+  Integer[1,256]                     $repo = 1,
+  Integer                            $ssh_port = 22,
   Stdlib::AbsolutePath               $backup_dir = $pgbackrest::backup_dir,
   Stdlib::AbsolutePath               $spool_dir = $pgbackrest::spool_dir,
   Stdlib::AbsolutePath               $config_subdir = $pgbackrest::config_subdir,
@@ -148,7 +152,9 @@ class pgbackrest::repository (
     }
 
     # Add public ssh keys from DB instances as authorized keys
-    Ssh_authorized_key <<| tag == "pgbackrest-${host_group}-instance" |>>
+    Ssh_authorized_key <<| tag == "pgbackrest-${host_group}" |>> {
+      require => File["${backup_dir}/.ssh"],
+    }
   }
 
   if $manage_pgpass {
@@ -165,7 +171,12 @@ class pgbackrest::repository (
     File_line <<| tag == "pgbackrest-${host_group}" |>>
   }
 
-  Exec <<| tag == "pgbackrest_stanza_create-${host_group}" |>>
+  # Collect per-member cluster configs exported by pgbackrest::stanza.
+  # pgBackRest merges all files in conf.d, so members of the same cluster
+  # (primary + replicas) combine into a single stanza section. They must be
+  # in place before stanza-create runs.
+  File <<| tag == "pgbackrest-${host_group}" |>>
+  -> Exec <<| tag == "pgbackrest_stanza_create-${host_group}" |>>
 
   if $manage_host_keys {
     # Import db instances host keys
@@ -236,8 +247,6 @@ class pgbackrest::repository (
       require   => File['/var/cache/pgbackrest'],
     }
 
-    Concat::Fragment <<| tag == "pgbackrest-repository-${host_group}" |>>
-
     $_home = $user_home ? {
       undef   => $ssh_user == 'postgres' ? {
         true  => '/var/lib/postgresql',
@@ -260,6 +269,35 @@ class pgbackrest::repository (
         target => "${_home}/.ssh/authorized_keys",
       }
     }
+  }
+
+  # Export this repository's connection details so DB instances in
+  # host_group can reach it directly, written to their pgbackrest.conf [global] section.
+  @@ini_setting { "repo${repo}-host-${fqdn}":
+    ensure  => present,
+    path    => "${config_dir}/${config_file}",
+    section => 'global',
+    setting => "repo${repo}-host",
+    value   => $fqdn,
+    tag     => "pgbackrest-repository-${host_group}",
+  }
+
+  @@ini_setting { "repo${repo}-host-user-${fqdn}":
+    ensure  => present,
+    path    => "${config_dir}/${config_file}",
+    section => 'global',
+    setting => "repo${repo}-host-user",
+    value   => $user,
+    tag     => "pgbackrest-repository-${host_group}",
+  }
+
+  @@ini_setting { "repo${repo}-host-port-${fqdn}":
+    ensure  => present,
+    path    => "${config_dir}/${config_file}",
+    section => 'global',
+    setting => "repo${repo}-host-port",
+    value   => $ssh_port,
+    tag     => "pgbackrest-repository-${host_group}",
   }
 
   if $manage_cron {

@@ -26,11 +26,13 @@
 
 ### Functions
 
+* [`pgbackrest::instance_id`](#pgbackrest--instance_id): Derives the cluster member id from a hostname suffix letter, so that cluster members named by the `<cluster><NN><member>` convention get a st
 * [`pgbackrest::ssh_key_path`](#pgbackrest--ssh_key_path): https://github.com/puppetlabs/puppet-specifications/blob/master/language/func-api.md#the-4x-api
 
 ### Data types
 
 * [`Pgbackrest::BackupType`](#Pgbackrest--BackupType)
+* [`Pgbackrest::CompressLevel`](#Pgbackrest--CompressLevel): Compression level, negative values are supported by zst (valid range: -7 to 22)
 * [`Pgbackrest::CompressType`](#Pgbackrest--CompressType)
 * [`Pgbackrest::HostKey`](#Pgbackrest--HostKey): ssh host keys
 * [`Pgbackrest::Hour`](#Pgbackrest--Hour)
@@ -193,7 +195,7 @@ Data type: `String`
 
 DB role for backup operations
 
-Default value: `'pgbackup'`
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--backup_user"></a>`backup_user`
 
@@ -209,7 +211,7 @@ Data type: `String`
 
 
 
-Default value: `'pgbackup'`
+Default value: `'postgres'`
 
 ##### <a name="-pgbackrest--backup_group"></a>`backup_group`
 
@@ -285,6 +287,8 @@ The following parameters are available in the `pgbackrest::repository` class:
 
 * [`fqdn`](#-pgbackrest--repository--fqdn)
 * [`host_group`](#-pgbackrest--repository--host_group)
+* [`repo`](#-pgbackrest--repository--repo)
+* [`ssh_port`](#-pgbackrest--repository--ssh_port)
 * [`backup_dir`](#-pgbackrest--repository--backup_dir)
 * [`hba_entry_order`](#-pgbackrest--repository--hba_entry_order)
 * [`db_name`](#-pgbackrest--repository--db_name)
@@ -332,6 +336,22 @@ Data type: `String`
 The name of this backup repository
 
 Default value: `$pgbackrest::host_group`
+
+##### <a name="-pgbackrest--repository--repo"></a>`repo`
+
+Data type: `Integer[1,256]`
+
+Repository integer ID, matches the `repo` parameter used on the stanza (DB) side
+
+Default value: `1`
+
+##### <a name="-pgbackrest--repository--ssh_port"></a>`ssh_port`
+
+Data type: `Integer`
+
+ssh port used by DB instances to connect to this repository
+
+Default value: `22`
 
 ##### <a name="-pgbackrest--repository--backup_dir"></a>`backup_dir`
 
@@ -602,6 +622,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`hostname`](#-pgbackrest--stanza--hostname)
 * [`id`](#-pgbackrest--stanza--id)
 * [`cluster`](#-pgbackrest--stanza--cluster)
+* [`primary`](#-pgbackrest--stanza--primary)
 * [`repo`](#-pgbackrest--stanza--repo)
 * [`host_group`](#-pgbackrest--stanza--host_group)
 * [`version`](#-pgbackrest--stanza--version)
@@ -616,6 +637,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`backup_dir`](#-pgbackrest--stanza--backup_dir)
 * [`spool_dir`](#-pgbackrest--stanza--spool_dir)
 * [`backups`](#-pgbackrest--stanza--backups)
+* [`config`](#-pgbackrest--stanza--config)
 * [`ssh_user`](#-pgbackrest--stanza--ssh_user)
 * [`ssh_port`](#-pgbackrest--stanza--ssh_port)
 * [`log_level_console`](#-pgbackrest--stanza--log_level_console)
@@ -657,17 +679,37 @@ Default value: `$facts['networking']['hostname']`
 
 ##### <a name="-pgbackrest--stanza--id"></a>`id`
 
-Data type: `Integer[1,256]`
+Data type: `Optional[Integer[1,256]]`
 
-unique number in the cluster
+Unique number of this instance within the cluster, used as the pg index
+(`pg<id>-*` options) in the repository configuration. The primary should use 1,
+each replica a distinct higher number. When unset it is derived from the
+hostname suffix (see `pgbackrest::instance_id`), or defaults to 1 when no
+`cluster` is set. NOTE: pgBackRest requires `pg1-*` options to exist —
+repository-side commands (stanza-create, backup) fail without a member
+with id 1, so a cluster whose only managed member would derive a higher
+id must set `id: 1` explicitly.
 
-Default value: `1`
+Default value: `undef`
 
 ##### <a name="-pgbackrest--stanza--cluster"></a>`cluster`
 
 Data type: `Optional[String]`
 
 Cluster name in case database has primary and some replicas.
+All members of the cluster must use the same value (it becomes the stanza name).
+
+Default value: `undef`
+
+##### <a name="-pgbackrest--stanza--primary"></a>`primary`
+
+Data type: `Optional[Boolean]`
+
+Whether this instance exports per-cluster singleton resources
+(stanza-create command, backup cron jobs). Exactly one member of the cluster
+must be primary. When unset, the role is detected at runtime from the
+`pgbackrest.in_recovery` fact (`SELECT pg_is_in_recovery()`), so it follows
+failovers; before PostgreSQL is up it falls back to `true` when `id` is 1.
 
 Default value: `undef`
 
@@ -784,6 +826,15 @@ Data type: `Optional[Hash]`
 
 Default value: `undef`
 
+##### <a name="-pgbackrest--stanza--config"></a>`config`
+
+Data type: `Hash[String, Hash]`
+
+Options written to /etc/pgbackrest/pgbackrest.conf, keyed by section,
+e.g. `{ 'global' => { 'archive-async' => 'y', 'process-max' => 8 } }`
+
+Default value: `{}`
+
 ##### <a name="-pgbackrest--stanza--ssh_user"></a>`ssh_user`
 
 Data type: `String`
@@ -855,7 +906,7 @@ Data type: `Boolean`
 
 whether db role should be managed
 
-Default value: `true`
+Default value: `false`
 
 ##### <a name="-pgbackrest--stanza--manage_ssh_keys"></a>`manage_ssh_keys`
 
@@ -963,7 +1014,7 @@ Default value: `'gz'`
 
 ##### <a name="-pgbackrest--stanza--compress_level"></a>`compress_level`
 
-Data type: `Optional[Integer[0,9]]`
+Data type: `Optional[Pgbackrest::CompressLevel]`
 
 
 
@@ -1023,9 +1074,53 @@ Data type: `Array[String]`
 
 Unix groups to which the $user will belong
 
-Default value: `['postgres']`
+Default value: `[]`
 
 ## Functions
+
+### <a name="pgbackrest--instance_id"></a>`pgbackrest::instance_id`
+
+Type: Ruby 4.x API
+
+Derives the cluster member id from a hostname suffix letter, so that
+cluster members named by the `<cluster><NN><member>` convention get
+a stable pg index: psql01a -> 1, psql01b -> 2, psql02a -> 1.
+
+#### Examples
+
+##### 
+
+```puppet
+pgbackrest::instance_id('psql01a.de') # => 1
+pgbackrest::instance_id('psql01b.de') # => 2
+pgbackrest::instance_id('psql02a.de') # => 1
+```
+
+#### `pgbackrest::instance_id(String[1] $hostname)`
+
+Derives the cluster member id from a hostname suffix letter, so that
+cluster members named by the `<cluster><NN><member>` convention get
+a stable pg index: psql01a -> 1, psql01b -> 2, psql02a -> 1.
+
+Returns: `Integer[1,26]` Position in the alphabet of the letter following the trailing digits
+of the first dot-separated label ('a' => 1, 'b' => 2, ...).
+Returns 1 when the hostname has no such suffix (standalone server).
+
+##### Examples
+
+###### 
+
+```puppet
+pgbackrest::instance_id('psql01a.de') # => 1
+pgbackrest::instance_id('psql01b.de') # => 2
+pgbackrest::instance_id('psql02a.de') # => 1
+```
+
+##### `hostname`
+
+Data type: `String[1]`
+
+Host name or FQDN, e.g. 'psql01b' or 'psql01b.de.example.com'
 
 ### <a name="pgbackrest--ssh_key_path"></a>`pgbackrest::ssh_key_path`
 
@@ -1064,6 +1159,12 @@ Data type: `Boolean`
 The Pgbackrest::BackupType data type.
 
 Alias of `Enum['full', 'incr', 'delta']`
+
+### <a name="Pgbackrest--CompressLevel"></a>`Pgbackrest::CompressLevel`
+
+Compression level, negative values are supported by zst (valid range: -7 to 22)
+
+Alias of `Integer[-7, 22]`
 
 ### <a name="Pgbackrest--CompressType"></a>`Pgbackrest::CompressType`
 

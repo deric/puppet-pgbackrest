@@ -31,6 +31,7 @@ include pgbackrest::repository
 
 repository config:
 ```yaml
+pgbackrest::repository::host_group: eu-west
 pgbackrest::repository::config:
   global:
     repo1-path: /backup/pgbackrest
@@ -45,6 +46,81 @@ pgbackrest::repository::config:
     compress-level: 3
     compress-type: lz4
 ```
+
+## Primary with replicas (standby servers)
+
+All members of a PostgreSQL cluster share one stanza. Set the same `cluster`
+name on every member and give each one a unique `id` (the pg index used in the
+repository configuration). pgBackRest requires `pg1-*` options to be present:
+repository-side commands (`stanza-create`, `backup`) fail with
+`command requires option: pg1-path` when no member exports id 1, so every
+cluster must contain a managed member with `id` 1 — if the only member's
+hostname would derive a higher id (e.g. a leftover `b` node after
+decommissioning the `a` node), set `id: 1` explicitly. The primary is detected at runtime via the
+`pgbackrest.in_recovery` fact (`SELECT pg_is_in_recovery()`), so the role
+follows failovers automatically; while PostgreSQL is not running yet (e.g.
+initial deployment) the member with `id: 1` is assumed to be the primary.
+Only the primary exports per-cluster resources (backup cron jobs and the
+`stanza-create` command); detection can be overridden with the `primary`
+parameter.
+
+Primary (psql01a):
+```yaml
+pgbackrest::stanza::cluster: psql01
+pgbackrest::stanza::id: 1
+pgbackrest::stanza::backups:
+  eu-west:
+    incr:
+      hour: 3
+```
+
+Standby (psql01b) — declare the same `backups` host groups (this assigns the
+repositories; schedules are only exported by the primary):
+```yaml
+pgbackrest::stanza::cluster: psql01
+pgbackrest::stanza::id: 2
+pgbackrest::stanza::backups:
+  eu-west:
+    incr:
+      hour: 3
+```
+
+When cluster members follow a `<name><NN><member>` naming convention
+(psql01a, psql01b, ...), the `pgbackrest::instance_id` function derives the
+member id from the hostname, so it doesn't have to be maintained per host in
+Hiera. Since Hiera data cannot call functions, wire it up in a profile:
+
+```puppet
+class profile::pgbackrest_stanza {
+  class { 'pgbackrest::stanza':
+    id => pgbackrest::instance_id($facts['networking']['hostname']),
+    # psql01a.de -> 1, psql01b.de -> 2, psql02a.de -> 1
+    # hostnames without a member letter (psql01) -> 1
+  }
+}
+```
+
+Each member exports its own `conf.d/<cluster>-<hostname>.conf` file to the
+repository containing only its `pg<id>-*` options. pgBackRest merges all files
+in `conf.d`, so the repository ends up with a single stanza section:
+
+```ini
+[psql01]
+pg1-host = psql01a.example.com
+...
+pg2-host = psql01b.example.com
+...
+```
+
+To take backups from the standby instead of the primary, set
+`backup-standby: 'y'` in the repository's `global` config section.
+
+Caveats:
+- Role passwords are replicated from the primary, so when `manage_pgpass` is
+  enabled set the same `db_password` (or `seed`) on all members, otherwise
+  the standby exports a `.pgpass` entry with a password that doesn't match.
+- Remove any hand-managed stanza section for the same cluster from the
+  repository configuration, otherwise pgBackRest may see duplicated options.
 
 ## How Does This Work
 
