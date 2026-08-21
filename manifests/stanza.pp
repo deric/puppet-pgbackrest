@@ -435,11 +435,13 @@ class pgbackrest::stanza (
       }
 
       # backups run per-stanza (pgBackRest picks the primary or a standby
-      # itself), so only one member exports the cron jobs
+      # itself), so only one member exports the cron jobs; the resource is
+      # keyed by the cluster name so a failover replaces the same cron entry
+      # on the repository instead of adding one per member
       if $manage_cron and $_primary {
         $config.each |$backup_type, $schedule| {
           # declare cron job, use defaults from stanza
-          create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${address}-${backup_type}" => $schedule }, {
+          create_resources(pgbackrest::cron_backup, { "cron_backup-${host_group}-${_cluster}-${backup_type}" => $schedule }, {
               id                   => $_id,
               hostname             => $hostname,
               repo                 => $repo,
@@ -450,7 +452,6 @@ class pgbackrest::stanza (
               backup_dir           => $backup_dir,
               backup_type          => $backup_type,
               backup_user          => $user,
-              server_address       => $address,
               process_max          => $process_max,
               compress_type        => $compress_type,
               compress_level       => $compress_level,

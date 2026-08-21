@@ -14,7 +14,6 @@ describe 'pgbackrest::cron_backup' do
       cluster: 'psql01',
       host_group: 'common',
       backup_type: 'incr',
-      server_address: 'localhost',
       db_name: 'backup',
       db_user: 'pgbackrest',
       backup_user: 'pgbackup',
@@ -25,7 +24,7 @@ describe 'pgbackrest::cron_backup' do
   it { is_expected.to compile }
 
   it {
-    expect(exported_resources).to contain_cron('pgbackrest_incr_localhost-common')
+    expect(exported_resources).to contain_cron('pgbackrest_incr_psql01-common')
       .with(
         user: 'pgbackup',
         weekday: '*',
@@ -42,7 +41,7 @@ describe 'pgbackrest::cron_backup' do
     it { is_expected.to compile }
 
     it {
-      expect(exported_resources).to contain_cron('pgbackrest_incr_localhost-common')
+      expect(exported_resources).to contain_cron('pgbackrest_incr_psql01-common')
         .with(command: %r{--compress-type=zst --compress-level=-7})
     }
   end
@@ -55,7 +54,7 @@ describe 'pgbackrest::cron_backup' do
     it { is_expected.to compile }
 
     it {
-      expect(exported_resources).to contain_cron('pgbackrest_incr_localhost-common')
+      expect(exported_resources).to contain_cron('pgbackrest_incr_psql01-common')
         .with(command: %r{--compress-type=zst --compress-level=22})
     }
   end
