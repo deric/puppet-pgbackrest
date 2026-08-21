@@ -22,7 +22,7 @@
 
 #### Private Defined types
 
-* `pgbackrest::cron_backup`: A cron job is exported from a database server, but could be executed elsewhere. Typically on a catalog (backup) server.
+* `pgbackrest::cron_backup`: A cron job is exported from a database server, but could be executed elsewhere.
 
 ### Functions
 
