@@ -1,6 +1,18 @@
 # @summary Manages pgbackrest ini config
 #
+# Creates the configuration directories and writes options from `config`
+# to the main configuration file. Options with `undef` or empty values are removed.
+#
 # @api private
+#
+# @param config_dir Main configuration directory
+# @param config_subdir Included config (sub)dir
+# @param config_file Main configuration file name
+# @param user Unix account owning the configuration files
+# @param group Unix group owning the configuration files
+# @param config Configuration options keyed by ini section,
+#   e.g. `{ 'global' => { 'process-max' => 8 } }`
+# @param show_diff Whether changes to configuration values should be shown in reports/logs
 #
 class pgbackrest::config (
   Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',

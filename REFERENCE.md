@@ -10,7 +10,7 @@
 
 * [`pgbackrest`](#pgbackrest): Common parameters for both repository and stanza
 * [`pgbackrest::repository`](#pgbackrest--repository): PostgreSQL backups storage
-* [`pgbackrest::stanza`](#pgbackrest--stanza): A PostgeSQL database instance to be backed up
+* [`pgbackrest::stanza`](#pgbackrest--stanza): A PostgreSQL database instance to be backed up
 
 #### Private Classes
 
@@ -43,14 +43,15 @@
 
 ### <a name="pgbackrest"></a>`pgbackrest`
 
-Namespace for shared parameters.
+Namespace for shared parameters. Defaults declared here are inherited by
+`pgbackrest::stanza` (database server) and `pgbackrest::repository` (backup server).
 
 #### Examples
 
 ##### In order to disable ssh keys management on both stanza (db server) and repository (backup server)
 
 ```puppet
-pgbackrest::manage_ssh_key: false
+pgbackrest::manage_ssh_keys: false
 ```
 
 #### Parameters
@@ -85,7 +86,7 @@ The following parameters are available in the `pgbackrest` class:
 
 Data type: `Boolean`
 
-
+Whether ssh keys should be generated and exchanged between database and repository servers
 
 Default value: `false`
 
@@ -101,7 +102,7 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether `.pgpass` file with database credentials should be managed on the repository server
 
 Default value: `true`
 
@@ -109,7 +110,7 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether `pg_hba.conf` rules allowing access from the repository server should be managed
 
 Default value: `true`
 
@@ -117,7 +118,7 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether backup cron jobs should be exported/collected
 
 Default value: `true`
 
@@ -125,7 +126,7 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether the backup unix user and group should be managed
 
 Default value: `true`
 
@@ -141,7 +142,7 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether cron jobs not managed by Puppet should be removed
 
 Default value: `true`
 
@@ -149,7 +150,7 @@ Default value: `true`
 
 Data type: `String`
 
-
+Default name grouping database instances and the repository server that backs them up
 
 Default value: `'common'`
 
@@ -181,7 +182,7 @@ Default value: `'present'`
 
 Data type: `String`
 
-
+Database used for backup operations
 
 Default value: `'backup'`
 
@@ -197,7 +198,7 @@ Default value: `'postgres'`
 
 Data type: `String`
 
-
+Unix account on the repository server that runs and owns backups
 
 Default value: `'pgbackup'`
 
@@ -205,7 +206,7 @@ Default value: `'pgbackup'`
 
 Data type: `String`
 
-
+Unix account on the database server used for ssh connections
 
 Default value: `'postgres'`
 
@@ -213,7 +214,7 @@ Default value: `'postgres'`
 
 Data type: `String`
 
-Unix account used (mainly) for storing backups
+Unix group used (mainly) for storing backups
 
 Default value: `'pgbackup'`
 
@@ -237,7 +238,7 @@ Default value: `'/etc/pgbackrest/conf.d'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Directory where backups will be stored
 
 Default value: `'/var/lib/pgbackrest'`
 
@@ -245,7 +246,7 @@ Default value: `'/var/lib/pgbackrest'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Directory for pgBackRest log files
 
 Default value: `'/var/log/pgbackrest'`
 
@@ -253,7 +254,7 @@ Default value: `'/var/log/pgbackrest'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Directory for transient data (async WAL archiving queue)
 
 Default value: `'/var/spool/pgbackrest'`
 
@@ -267,7 +268,10 @@ Default value: `'md5'`
 
 ### <a name="pgbackrest--repository"></a>`pgbackrest::repository`
 
-Configures pgBackRest backup server that can perform remote backups
+Configures pgBackRest backup server that can perform remote backups.
+Collects resources (cluster configs, ssh keys, pgpass entries, cron jobs)
+exported by `pgbackrest::stanza` from database servers in the same host group,
+and exports its own connection details back to them.
 
 #### Examples
 
@@ -321,7 +325,7 @@ The following parameters are available in the `pgbackrest::repository` class:
 
 Data type: `String`
 
-
+Address (fqdn) DB instances use to reach this repository server
 
 Default value: `$facts['networking']['fqdn']`
 
@@ -353,7 +357,7 @@ Default value: `22`
 
 Data type: `Stdlib::AbsolutePath`
 
-Directory for storing backups
+Directory for storing backups, also the home of the backup user
 
 Default value: `$pgbackrest::backup_dir`
 
@@ -361,7 +365,7 @@ Default value: `$pgbackrest::backup_dir`
 
 Data type: `Integer`
 
-
+Order of the exported `pg_hba.conf` rules
 
 Default value: `50`
 
@@ -369,7 +373,7 @@ Default value: `50`
 
 Data type: `String`
 
-
+Database used for backup operations
 
 Default value: `$pgbackrest::db_name`
 
@@ -377,7 +381,7 @@ Default value: `$pgbackrest::db_name`
 
 Data type: `String`
 
-
+DB role used for backup operations
 
 Default value: `$pgbackrest::db_user`
 
@@ -385,7 +389,7 @@ Default value: `$pgbackrest::db_user`
 
 Data type: `String`
 
-
+Unix account on the DB servers this repository connects to (as authorized key target)
 
 Default value: `$pgbackrest::ssh_user`
 
@@ -393,7 +397,7 @@ Default value: `$pgbackrest::ssh_user`
 
 Data type: `String`
 
-
+Type of the generated ssh key pair, e.g. 'ed25519'
 
 Default value: `'ed25519'`
 
@@ -402,6 +406,8 @@ Default value: `'ed25519'`
 Data type: `Hash`
 
 Hash with configuration options
+written to pgbackrest.conf, keyed by section,
+e.g. `{ 'global' => { 'repo1-retention-full' => '2' } }`
 
 Default value: `{}`
 
@@ -409,7 +415,7 @@ Default value: `{}`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Main configuration directory
 
 Default value: `$pgbackrest::config_dir`
 
@@ -417,7 +423,7 @@ Default value: `$pgbackrest::config_dir`
 
 Data type: `String`
 
-
+Main configuration file name
 
 Default value: `'pgbackrest.conf'`
 
@@ -425,7 +431,7 @@ Default value: `'pgbackrest.conf'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Directory for transient data
 
 Default value: `$pgbackrest::spool_dir`
 
@@ -433,7 +439,7 @@ Default value: `$pgbackrest::spool_dir`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Included config (sub)dir where collected per-cluster configs are placed
 
 Default value: `$pgbackrest::config_subdir`
 
@@ -441,7 +447,7 @@ Default value: `$pgbackrest::config_subdir`
 
 Data type: `String`
 
-
+Permissions of managed backup/spool directories
 
 Default value: `'0750'`
 
@@ -449,7 +455,7 @@ Default value: `'0750'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Directory for pgBackRest log files
 
 Default value: `$pgbackrest::log_dir`
 
@@ -457,7 +463,7 @@ Default value: `$pgbackrest::log_dir`
 
 Data type: `Optional[Integer]`
 
-
+Backup user account ID
 
 Default value: `undef`
 
@@ -465,7 +471,7 @@ Default value: `undef`
 
 Data type: `String`
 
-
+Address (CIDR) used in the exported replication `pg_hba.conf` rule
 
 Default value: `"${facts['networking']['ip']}/32"`
 
@@ -489,7 +495,7 @@ Default value: `$pgbackrest::backup_group`
 
 Data type: `Enum['present', 'absent']`
 
-
+Whether the backup user account should be present or absent
 
 Default value: `'present'`
 
@@ -505,7 +511,7 @@ Default value: `'/bin/bash'`
 
 Data type: `String`
 
-
+ssh host key type, one of 'ecdsa', 'ed25519' or 'rsa'
 
 Default value: `$pgbackrest::host_key_type`
 
@@ -529,7 +535,8 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether an ssh key pair should be generated for the backup user and exchanged
+with DB instances (public keys collected/exported)
 
 Default value: `$pgbackrest::manage_ssh_keys`
 
@@ -537,7 +544,7 @@ Default value: `$pgbackrest::manage_ssh_keys`
 
 Data type: `Boolean`
 
-
+Whether DB instances' host keys should be imported and this host's key exported
 
 Default value: `$pgbackrest::manage_host_keys`
 
@@ -545,7 +552,7 @@ Default value: `$pgbackrest::manage_host_keys`
 
 Data type: `Boolean`
 
-
+Whether the `.pgpass` file should be managed and filled with collected credentials
 
 Default value: `$pgbackrest::manage_pgpass`
 
@@ -553,7 +560,7 @@ Default value: `$pgbackrest::manage_pgpass`
 
 Data type: `Boolean`
 
-
+Whether `pg_hba.conf` rules allowing access from this server should be exported to DB instances
 
 Default value: `$pgbackrest::manage_hba`
 
@@ -561,7 +568,7 @@ Default value: `$pgbackrest::manage_hba`
 
 Data type: `Boolean`
 
-
+Whether exported backup cron jobs should be collected and run on this server
 
 Default value: `$pgbackrest::manage_cron`
 
@@ -569,7 +576,7 @@ Default value: `$pgbackrest::manage_cron`
 
 Data type: `Boolean`
 
-
+Whether the backup unix user and group should be managed
 
 Default value: `true`
 
@@ -577,7 +584,7 @@ Default value: `true`
 
 Data type: `Boolean`
 
-
+Whether pgbackrest.conf should be managed
 
 Default value: `true`
 
@@ -585,7 +592,7 @@ Default value: `true`
 
 Data type: `Postgresql::Pg_password_encryption`
 
-
+Either md5 or scram-sha-256
 
 Default value: `$pgbackrest::password_encryption`
 
@@ -599,7 +606,9 @@ Default value: `undef`
 
 ### <a name="pgbackrest--stanza"></a>`pgbackrest::stanza`
 
-Manages configuration for postgresql database backup
+Manages configuration for postgresql database backup. Exports resources
+(cluster config, ssh keys, pgpass entries, stanza-create command, cron jobs)
+that are collected by `pgbackrest::repository` on the backup server.
 
  Default: /var/lib/pgbackrest
 
@@ -609,6 +618,17 @@ Manages configuration for postgresql database backup
 
 ```puppet
 include pgbackrest::stanza
+```
+
+##### Schedule daily incremental and weekly full backups (hiera)
+
+```puppet
+pgbackrest::stanza::backups:
+  common:
+    incr:
+      hour: 3
+    full:
+      weekday: 0
 ```
 
 #### Parameters
@@ -730,6 +750,7 @@ Default value: `$pgbackrest::host_group`
 Data type: `Optional[String]`
 
 PostgreSQL major version, e.g. '16'
+When unset, looked up from `postgresql::globals::version`
 
 Default value: `undef`
 
@@ -737,7 +758,7 @@ Default value: `undef`
 
 Data type: `String`
 
-
+Address (fqdn) the repository server uses to reach this instance
 
 Default value: `$facts['networking']['fqdn']`
 
@@ -745,7 +766,7 @@ Default value: `$facts['networking']['fqdn']`
 
 Data type: `Integer`
 
-
+PostgreSQL port
 
 Default value: `5432`
 
@@ -753,7 +774,7 @@ Default value: `5432`
 
 Data type: `String`
 
-
+Database used for backup operations
 
 Default value: `$pgbackrest::db_name`
 
@@ -761,7 +782,7 @@ Default value: `$pgbackrest::db_name`
 
 Data type: `String`
 
-
+DB role used for backup operations
 
 Default value: `$pgbackrest::db_user`
 
@@ -785,7 +806,7 @@ Default value: `'main'`
 
 Data type: `Optional[Pgbackrest::Secret]`
 
-
+Password for `db_user`; randomly generated from `seed` when not given
 
 Default value: `undef`
 
@@ -818,7 +839,10 @@ Default value: `$pgbackrest::spool_dir`
 
 Data type: `Optional[Hash]`
 
-
+Backup schedules keyed by repository host group, then by backup type
+(`full`, `diff`, `incr`) with cron fields as values, e.g.
+`{ 'common' => { 'incr' => { 'hour' => 3 }, 'full' => { 'weekday' => 0 } } }`.
+No backups are scheduled when unset.
 
 Default value: `undef`
 
@@ -884,7 +908,7 @@ Default value: `false`
 
 Data type: `String`
 
-
+Unix account owning local pgBackRest config files (backup user on the repository server)
 
 Default value: `$pgbackrest::backup_user`
 
@@ -892,7 +916,7 @@ Default value: `$pgbackrest::backup_user`
 
 Data type: `String`
 
-
+Primary unix group of `user`
 
 Default value: `$pgbackrest::backup_group`
 
@@ -908,7 +932,8 @@ Default value: `false`
 
 Data type: `Boolean`
 
-
+Whether an ssh key pair should be generated for `ssh_user` and its public key
+exported for the repository server
 
 Default value: `$pgbackrest::manage_ssh_keys`
 
@@ -916,7 +941,7 @@ Default value: `$pgbackrest::manage_ssh_keys`
 
 Data type: `Boolean`
 
-
+Whether this host's ssh host key should be exported and the repository's host key imported
 
 Default value: `$pgbackrest::manage_host_keys`
 
@@ -924,7 +949,7 @@ Default value: `$pgbackrest::manage_host_keys`
 
 Data type: `Boolean`
 
-
+Whether `.pgpass` entries with `db_user` credentials should be exported to the repository server
 
 Default value: `$pgbackrest::manage_pgpass`
 
@@ -932,7 +957,7 @@ Default value: `$pgbackrest::manage_pgpass`
 
 Data type: `Boolean`
 
-
+Whether `pg_hba.conf` rules exported by the repository server should be collected
 
 Default value: `$pgbackrest::manage_hba`
 
@@ -940,7 +965,7 @@ Default value: `$pgbackrest::manage_hba`
 
 Data type: `Boolean`
 
-
+Whether backup cron jobs should be exported to the repository server
 
 Default value: `$pgbackrest::manage_cron`
 
@@ -972,7 +997,7 @@ Default value: `true`
 
 Data type: `String`
 
-
+ssh host key type, one of 'ecdsa', 'ed25519' or 'rsa'
 
 Default value: `$pgbackrest::host_key_type`
 
@@ -980,7 +1005,7 @@ Default value: `$pgbackrest::host_key_type`
 
 Data type: `String`
 
-
+Type of the generated ssh key pair, e.g. 'ed25519'
 
 Default value: `'ed25519'`
 
@@ -988,7 +1013,7 @@ Default value: `'ed25519'`
 
 Data type: `Stdlib::AbsolutePath`
 
-
+Directory for pgBackRest log files
 
 Default value: `$pgbackrest::log_dir`
 
@@ -996,7 +1021,8 @@ Default value: `$pgbackrest::log_dir`
 
 Data type: `Pgbackrest::LogLevel`
 
-
+Logging level for the file log, default: 'info'
+Possible values 'off', 'error', 'warn', 'info', 'detail', 'debug', 'trace'
 
 Default value: `'info'`
 
@@ -1004,7 +1030,7 @@ Default value: `'info'`
 
 Data type: `Pgbackrest::CompressType`
 
-
+File compression type, e.g. 'gz', 'lz4', 'zst' or 'bz2'
 
 Default value: `'gz'`
 
@@ -1012,7 +1038,7 @@ Default value: `'gz'`
 
 Data type: `Optional[Pgbackrest::CompressLevel]`
 
-
+File compression level (depends on `compress_type`)
 
 Default value: `undef`
 
@@ -1020,7 +1046,7 @@ Default value: `undef`
 
 Data type: `Optional[Integer[1,999]]`
 
-
+Max processes to use for compress/transfer
 
 Default value: `undef`
 
@@ -1028,7 +1054,7 @@ Default value: `undef`
 
 Data type: `Postgresql::Pg_password_encryption`
 
-
+Either md5 or scram-sha-256
 
 Default value: `$pgbackrest::password_encryption`
 
@@ -1036,7 +1062,7 @@ Default value: `$pgbackrest::password_encryption`
 
 Data type: `String`
 
-
+Shell of the backup user account
 
 Default value: `'/bin/bash'`
 
@@ -1044,7 +1070,7 @@ Default value: `'/bin/bash'`
 
 Data type: `Enum['present', 'absent']`
 
-
+Whether the backup user account should be present or absent
 
 Default value: `'present'`
 

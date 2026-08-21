@@ -1,6 +1,15 @@
 # @summary Configure grants for backup user
 #
+# Grants the (non-superuser) backup role the minimal privileges required by
+# pgBackRest: usage of `pg_catalog`, `pg_read_all_settings` and execution of
+# backup-related functions. PostgreSQL 15 renamed `pg_start_backup`/`pg_stop_backup`
+# to `pg_backup_start`/`pg_backup_stop`, so grants depend on `version`.
+#
 # @api private
+#
+# @param db_name Database used for backup operations
+# @param db_user DB role the privileges are granted to
+# @param version PostgreSQL major version, e.g. '16'
 #
 class pgbackrest::grants (
   String $db_name,

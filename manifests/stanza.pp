@@ -1,6 +1,8 @@
-# @summary A PostgeSQL database instance to be backed up
+# @summary A PostgreSQL database instance to be backed up
 #
-# Manages configuration for postgresql database backup
+# Manages configuration for postgresql database backup. Exports resources
+# (cluster config, ssh keys, pgpass entries, stanza-create command, cron jobs)
+# that are collected by `pgbackrest::repository` on the backup server.
 #
 # @param hostname Unique identifier
 # @param id Unique number of this instance within the cluster, used as the pg index
@@ -21,15 +23,17 @@
 # @param repo backup repository integer ID
 # @param host_group Default repository host group
 # @param version PostgreSQL major version, e.g. '16'
-# @param address
-# @param port
-# @param db_name
-# @param db_user
+#   When unset, looked up from `postgresql::globals::version`
+# @param address Address (fqdn) the repository server uses to reach this instance
+# @param port PostgreSQL port
+# @param db_name Database used for backup operations
+# @param db_user DB role used for backup operations
 # @param db_path
 #   Typically postgres home directory
 # @param db_cluster
 #   PostgreSQL cluster name, default: main
 # @param db_password
+#   Password for `db_user`; randomly generated from `seed` when not given
 # @param seed
 #   Random password seed
 # @param backup_dir
@@ -39,6 +43,10 @@
 #  Path where transient data is stored (should be on local filesystem)
 #  Default: /var/spool/pgbackrest
 # @param backups
+#   Backup schedules keyed by repository host group, then by backup type
+#   (`full`, `diff`, `incr`) with cron fields as values, e.g.
+#   `{ 'common' => { 'incr' => { 'hour' => 3 }, 'full' => { 'weekday' => 0 } } }`.
+#   No backups are scheduled when unset.
 # @param config
 #   Options written to /etc/pgbackrest/pgbackrest.conf, keyed by section,
 #   e.g. `{ 'global' => { 'archive-async' => 'y', 'process-max' => 8 } }`
@@ -55,33 +63,49 @@
 #   Full path to backup executable.
 # @param redirect_console
 #   Redirect console output to a log file (make sense especially with custom backup command)
-# @param user
-# @param group
+# @param user Unix account owning local pgBackRest config files (backup user on the repository server)
+# @param group Primary unix group of `user`
 # @param manage_dbuser whether db role should be managed
 # @param manage_ssh_keys
+#   Whether an ssh key pair should be generated for `ssh_user` and its public key
+#   exported for the repository server
 # @param manage_host_keys
+#   Whether this host's ssh host key should be exported and the repository's host key imported
 # @param manage_pgpass
+#   Whether `.pgpass` entries with `db_user` credentials should be exported to the repository server
 # @param manage_hba
+#   Whether `pg_hba.conf` rules exported by the repository server should be collected
 # @param manage_cron
+#   Whether backup cron jobs should be exported to the repository server
 # @param manage_user Whether unix user account should be managed
 # @param manage_user_home Whether user's home directory should be created by puppet
 # @param manage_archive_cmd Whether archive_command should be set on postgresql instance, changing archive_mode requires restart
-# @param host_key_type
-# @param ssh_key_type
-# @param log_dir
+# @param host_key_type ssh host key type, one of 'ecdsa', 'ed25519' or 'rsa'
+# @param ssh_key_type Type of the generated ssh key pair, e.g. 'ed25519'
+# @param log_dir Directory for pgBackRest log files
 # @param log_level_file
-# @param compress_type
-# @param compress_level
-# @param process_max
-# @param password_encryption
-# @param user_shell
-# @param user_ensure
+#   Logging level for the file log, default: 'info'
+#   Possible values 'off', 'error', 'warn', 'info', 'detail', 'debug', 'trace'
+# @param compress_type File compression type, e.g. 'gz', 'lz4', 'zst' or 'bz2'
+# @param compress_level File compression level (depends on `compress_type`)
+# @param process_max Max processes to use for compress/transfer
+# @param password_encryption Either md5 or scram-sha-256
+# @param user_shell Shell of the backup user account
+# @param user_ensure Whether the backup user account should be present or absent
 # @param user_home Path to backup user home directory
 # @param uid user account ID
 # @param groups Unix groups to which the $user will belong
 #
 # @example
 #   include pgbackrest::stanza
+#
+# @example Schedule daily incremental and weekly full backups (hiera)
+#   pgbackrest::stanza::backups:
+#     common:
+#       incr:
+#         hour: 3
+#       full:
+#         weekday: 0
 class pgbackrest::stanza (
   String                             $hostname             = $facts['networking']['hostname'],
   Optional[Integer[1,256]]           $id                   = undef,

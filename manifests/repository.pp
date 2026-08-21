@@ -1,44 +1,55 @@
 # @summary PostgreSQL backups storage
 #
-# Configures pgBackRest backup server that can perform remote backups
+# Configures pgBackRest backup server that can perform remote backups.
+# Collects resources (cluster configs, ssh keys, pgpass entries, cron jobs)
+# exported by `pgbackrest::stanza` from database servers in the same host group,
+# and exports its own connection details back to them.
 #
-# @param fqdn
+# @param fqdn Address (fqdn) DB instances use to reach this repository server
 # @param host_group The name of this backup repository
 # @param repo Repository integer ID, matches the `repo` parameter used on the stanza (DB) side
 # @param ssh_port ssh port used by DB instances to connect to this repository
-# @param backup_dir Directory for storing backups
-# @param hba_entry_order
-# @param db_name
-# @param db_user
-# @param ssh_user
-# @param ssh_key_type
+# @param backup_dir Directory for storing backups, also the home of the backup user
+# @param hba_entry_order Order of the exported `pg_hba.conf` rules
+# @param db_name Database used for backup operations
+# @param db_user DB role used for backup operations
+# @param ssh_user Unix account on the DB servers this repository connects to (as authorized key target)
+# @param ssh_key_type Type of the generated ssh key pair, e.g. 'ed25519'
 # @param config Hash with configuration options
-# @param config_dir
-# @param config_file
-# @param spool_dir
-# @param config_subdir
-# @param dir_mode
-# @param log_dir
-# @param uid
-# @param exported_ipaddress
+#   written to pgbackrest.conf, keyed by section,
+#   e.g. `{ 'global' => { 'repo1-retention-full' => '2' } }`
+# @param config_dir Main configuration directory
+# @param config_file Main configuration file name
+# @param spool_dir Directory for transient data
+# @param config_subdir Included config (sub)dir where collected per-cluster configs are placed
+# @param dir_mode Permissions of managed backup/spool directories
+# @param log_dir Directory for pgBackRest log files
+# @param uid Backup user account ID
+# @param exported_ipaddress Address (CIDR) used in the exported replication `pg_hba.conf` rule
 # @param user
 #   Local user account used for running and storing backups in its home dir.
 # @param group
 #   Primary group of backup user
-# @param user_ensure
+# @param user_ensure Whether the backup user account should be present or absent
 # @param user_shell Backup user shell
-# @param host_key_type
+# @param host_key_type ssh host key type, one of 'ecdsa', 'ed25519' or 'rsa'
 # @param purge_cron
 #   Remove cron jobs not managed by Puppet
 # @param manage_dirs Whether directories should be managed by Puppet
 # @param manage_ssh_keys
+#   Whether an ssh key pair should be generated for the backup user and exchanged
+#   with DB instances (public keys collected/exported)
 # @param manage_host_keys
+#   Whether DB instances' host keys should be imported and this host's key exported
 # @param manage_pgpass
+#   Whether the `.pgpass` file should be managed and filled with collected credentials
 # @param manage_hba
+#   Whether `pg_hba.conf` rules allowing access from this server should be exported to DB instances
 # @param manage_cron
-# @param manage_user
-# @param manage_config
-# @param password_encryption
+#   Whether exported backup cron jobs should be collected and run on this server
+# @param manage_user Whether the backup unix user and group should be managed
+# @param manage_config Whether pgbackrest.conf should be managed
+# @param password_encryption Either md5 or scram-sha-256
 # @param user_home Path to backup user home directory on stanza server
 # @example
 #   include pgbackrest::repository
