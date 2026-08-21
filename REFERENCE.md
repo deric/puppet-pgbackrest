@@ -34,14 +34,10 @@
 * [`Pgbackrest::BackupType`](#Pgbackrest--BackupType): Type of backup, passed to `pgbackrest backup --type`
 * [`Pgbackrest::CompressLevel`](#Pgbackrest--CompressLevel): Compression level (valid range: -7 to 22)
 * [`Pgbackrest::CompressType`](#Pgbackrest--CompressType): Supported compression algorithm, `none` disables compression
+* [`Pgbackrest::CronField`](#Pgbackrest--CronField): A cron schedule field
 * [`Pgbackrest::HostKey`](#Pgbackrest--HostKey): Supported ssh host key algorithm
-* [`Pgbackrest::Hour`](#Pgbackrest--Hour): Hour of a cron schedule
 * [`Pgbackrest::LogLevel`](#Pgbackrest--LogLevel): Supported pgbackrest log level
-* [`Pgbackrest::Minute`](#Pgbackrest--Minute): Minute of a cron schedule
-* [`Pgbackrest::Month`](#Pgbackrest--Month): Month of a cron schedule
-* [`Pgbackrest::Monthday`](#Pgbackrest--Monthday): Day of month of a cron schedule
 * [`Pgbackrest::Secret`](#Pgbackrest--Secret): Either a plain-text password or a Sensitive string
-* [`Pgbackrest::Weekday`](#Pgbackrest--Weekday): Day of week of a cron schedule
 
 ## Classes
 
@@ -1158,7 +1154,7 @@ Data type: `Boolean`
 
 Type of backup, passed to `pgbackrest backup --type`
 
-Alias of `Enum['full', 'incr', 'delta']`
+Alias of `Enum['full', 'incr', 'diff']`
 
 ### <a name="Pgbackrest--CompressLevel"></a>`Pgbackrest::CompressLevel`
 
@@ -1172,18 +1168,18 @@ Supported compression algorithm, `none` disables compression
 
 Alias of `Enum['none', 'bz2', 'gz', 'lz4', 'zst']`
 
+### <a name="Pgbackrest--CronField"></a>`Pgbackrest::CronField`
+
+Accepts a single integer, a cron expression string (e.g. `'*'`, `'*/15'`, `'8-18'`),
+or an array of those. Value ranges are validated by the `cron` resource itself.
+
+Alias of `Variant[Integer, String, Array[Variant[Integer, String], 1]]`
+
 ### <a name="Pgbackrest--HostKey"></a>`Pgbackrest::HostKey`
 
 Supported ssh host key algorithm
 
 Alias of `Enum['ecdsa', 'ed25519', 'rsa']`
-
-### <a name="Pgbackrest--Hour"></a>`Pgbackrest::Hour`
-
-Accepts a single hour (0-23), a cron expression string (e.g. `'*'`, `'*/6'`, `'8-18'`),
-or an array of hours.
-
-Alias of `Variant[Integer[0,23], String, Tuple[Variant[String, Integer[0,23]], 1, default]]`
 
 ### <a name="Pgbackrest--LogLevel"></a>`Pgbackrest::LogLevel`
 
@@ -1191,37 +1187,9 @@ Supported pgbackrest log level
 
 Alias of `Enum['off', 'error', 'warn', 'info', 'detail', 'debug', 'trace']`
 
-### <a name="Pgbackrest--Minute"></a>`Pgbackrest::Minute`
-
-Accepts a single minute (0-59), a cron expression string (e.g. `'*'`, `'*/15'`, `'0-30'`),
-or an array of minutes.
-
-Alias of `Variant[Integer[0,59], String, Tuple[Variant[String, Integer[0,59]], 1, default]]`
-
-### <a name="Pgbackrest--Month"></a>`Pgbackrest::Month`
-
-Accepts a single month (1-12), a cron expression string (e.g. `'*'`, `'*/3'`, `'1-6'`),
-or an array of months.
-
-Alias of `Variant[Integer[1,12], String, Tuple[Variant[String, Integer[1,12]], 1, default]]`
-
-### <a name="Pgbackrest--Monthday"></a>`Pgbackrest::Monthday`
-
-Accepts a single day (1-31), a cron expression string (e.g. `'*'`, `'*/2'`, `'1-15'`),
-or an array of days.
-
-Alias of `Variant[Integer[1,31], String, Tuple[Variant[String, Integer[1,31]], 1, default]]`
-
 ### <a name="Pgbackrest--Secret"></a>`Pgbackrest::Secret`
 
 Either a plain-text password or a Sensitive string
 
 Alias of `Variant[String, Sensitive[String]]`
-
-### <a name="Pgbackrest--Weekday"></a>`Pgbackrest::Weekday`
-
-Accepts a single day (0-7, where both 0 and 7 mean Sunday), a cron expression
-string (e.g. `'*'`, `'1-5'`), or an array of days.
-
-Alias of `Variant[Integer[0,7], String, Tuple[Variant[String, Integer[0,7]], 1, default]]`
 

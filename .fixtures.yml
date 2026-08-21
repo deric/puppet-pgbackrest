@@ -3,7 +3,6 @@
 ---
 fixtures:
   forge_modules:
-    concat: puppetlabs/concat
     cron_core: puppetlabs/cron_core
     postgresql:
       repo: puppetlabs/postgresql
