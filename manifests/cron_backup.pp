@@ -1,6 +1,9 @@
 # @api private
 # A cron job is exported from a database server, but could be executed elsewhere.
 # Typically on a catalog (backup) server.
+# The exported resource is keyed by the cluster (stanza) name, not the member
+# address, so the whole cluster gets a single cron entry per backup type that
+# follows the primary across failovers instead of accumulating one per member.
 define pgbackrest::cron_backup (
   Integer[1,256]                  $id,
   String                          $hostname,
@@ -8,7 +11,6 @@ define pgbackrest::cron_backup (
   Integer[1,256]                  $repo,
   String                          $host_group,
   Pgbackrest::BackupType          $backup_type,
-  String                          $server_address,
   String                          $db_name,
   String                          $db_user,
   String                          $backup_user,
@@ -29,7 +31,7 @@ define pgbackrest::cron_backup (
   Optional[String]                $binary = undef,
   Optional[String]                $log_console = undef,
 ) {
-  @@cron { "pgbackrest_${backup_type}_${server_address}-${host_group}":
+  @@cron { "pgbackrest_${backup_type}_${cluster}-${host_group}":
     command  => epp('pgbackrest/cron_backup.epp', {
         id                => $id,
         hostname          => $hostname,
@@ -41,7 +43,6 @@ define pgbackrest::cron_backup (
         backup_dir        => $backup_dir,
         backup_type       => $backup_type,
         backup_user       => $backup_user,
-        server_address    => $server_address,
         process_max       => $process_max,
         compress_type     => $compress_type,
         compress_level    => $compress_level,

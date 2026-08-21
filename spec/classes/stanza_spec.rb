@@ -348,7 +348,7 @@ describe 'pgbackrest::stanza' do
     }
 
     it {
-      expect(exported_resources).to contain_cron('pgbackrest_full_psql.localhost-common').with(
+      expect(exported_resources).to contain_cron('pgbackrest_full_psql-common').with(
         tag: 'pgbackrest-common',
       )
     }
@@ -404,7 +404,7 @@ describe 'pgbackrest::stanza' do
 
     it 'does not export per-cluster singleton resources' do
       expect(exported_resources).not_to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
-      expect(exported_resources).not_to contain_cron('pgbackrest_incr_psql.localhost-common')
+      expect(exported_resources).not_to contain_cron('pgbackrest_incr_psql-common')
     end
 
     it 'writes local config with its own pg index and no pg-host' do
@@ -489,7 +489,7 @@ describe 'pgbackrest::stanza' do
 
     it 'exports per-cluster singleton resources despite id != 1' do
       expect(exported_resources).to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
-      expect(exported_resources).to contain_cron('pgbackrest_full_psql.localhost-common')
+      expect(exported_resources).to contain_cron('pgbackrest_full_psql-common')
     end
   end
 
@@ -511,7 +511,7 @@ describe 'pgbackrest::stanza' do
 
     it 'does not export per-cluster singleton resources despite id == 1' do
       expect(exported_resources).not_to contain_exec('pgbackrest_stanza_create_psql.localhost-common')
-      expect(exported_resources).not_to contain_cron('pgbackrest_full_psql.localhost-common')
+      expect(exported_resources).not_to contain_cron('pgbackrest_full_psql-common')
     end
 
     it 'explicit primary parameter overrides the fact' do

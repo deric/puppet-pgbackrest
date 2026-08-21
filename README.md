@@ -62,7 +62,9 @@ follows failovers automatically; while PostgreSQL is not running yet (e.g.
 initial deployment) the member with `id: 1` is assumed to be the primary.
 Only the primary exports per-cluster resources (backup cron jobs and the
 `stanza-create` command); detection can be overridden with the `primary`
-parameter.
+parameter. Backup cron jobs are keyed by the cluster (stanza) name, so the
+repository ends up with a single cron entry per backup type and a failover
+updates that entry instead of leaving one job per former primary behind.
 
 Primary (psql01a):
 ```yaml
