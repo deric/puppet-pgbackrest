@@ -144,7 +144,7 @@ class pgbackrest::stanza (
   Hash[String, Hash]                 $config               = {},
   Pgbackrest::LogLevel               $log_level_console    = 'warn',
   Pgbackrest::LogLevel               $log_level_file       = 'info',
-  Pgbackrest::CompressType           $compress_type        = 'gz',
+  Pgbackrest::CompressType           $compress_type        = 'zst',
   Optional[Pgbackrest::CompressLevel] $compress_level       = undef,
   Optional[Integer[1,999]]           $process_max          = undef,
   Optional[Integer]                  $archive_timeout      = undef,
