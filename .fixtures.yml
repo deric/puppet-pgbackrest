@@ -10,7 +10,5 @@ fixtures:
       ref: 10.0.2
     sshkeys_core: puppetlabs/sshkeys_core
     stdlib: puppetlabs/stdlib
-    inifile:
-      repo: puppetlabs/inifile
-      ref: 6.0.0
+    inifile: puppetlabs/inifile
     systemd: puppet/systemd
