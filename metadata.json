@@ -1,6 +1,6 @@
 {
   "name": "deric-pgbackrest",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Tomas Barton",
   "summary": "Manage PostgreSQL backups using pgBackRest",
   "license": "Apache-2.0",
