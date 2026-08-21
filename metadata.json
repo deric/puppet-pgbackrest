@@ -19,6 +19,11 @@
       "version_requirement": ">= 9.1.0 < 10.0.0"
     },
     {
+      "name": "puppetlabs/concat",
+      "version_requirement": ">= 8.0.0 < 11.0.0"
+    },
+
+    {
       "name": "puppetlabs/inifile",
       "version_requirement": ">= 4.0.0 < 7.0.0"
     },
