@@ -49,6 +49,8 @@
 #   Whether exported backup cron jobs should be collected and run on this server
 # @param manage_user Whether the backup unix user and group should be managed
 # @param manage_config Whether pgbackrest.conf should be managed
+# @param purge_config_dir
+#   Whether files in `config_subdir` not managed by Puppet should be removed. Default: true
 # @param password_encryption Either md5 or scram-sha-256
 # @param user_home Path to backup user home directory on stanza server
 # @example
@@ -76,6 +78,7 @@ class pgbackrest::repository (
   Boolean                            $manage_dirs = true,
   Boolean                            $manage_user = true,
   Boolean                            $manage_config = true,
+  Boolean                            $purge_config_dir = true,
   Boolean                            $purge_cron = false,
   Optional[Integer]                  $uid = undef,
   Stdlib::AbsolutePath               $config_dir = $pgbackrest::config_dir,
@@ -114,12 +117,13 @@ class pgbackrest::repository (
     })
 
     class { 'pgbackrest::config':
-      config_dir    => $config_dir,
-      config_subdir => $config_subdir,
-      config_file   => $config_file,
-      user          => $user,
-      group         => $group,
-      config        => $_config,
+      config_dir       => $config_dir,
+      config_subdir    => $config_subdir,
+      config_file      => $config_file,
+      user             => $user,
+      group            => $group,
+      config           => $_config,
+      purge_config_dir => $purge_config_dir,
     }
   }
 

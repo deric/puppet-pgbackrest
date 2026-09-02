@@ -318,6 +318,7 @@ The following parameters are available in the `pgbackrest::repository` class:
 * [`manage_cron`](#-pgbackrest--repository--manage_cron)
 * [`manage_user`](#-pgbackrest--repository--manage_user)
 * [`manage_config`](#-pgbackrest--repository--manage_config)
+* [`purge_config_dir`](#-pgbackrest--repository--purge_config_dir)
 * [`password_encryption`](#-pgbackrest--repository--password_encryption)
 * [`user_home`](#-pgbackrest--repository--user_home)
 
@@ -585,6 +586,14 @@ Default value: `true`
 Data type: `Boolean`
 
 Whether pgbackrest.conf should be managed
+
+Default value: `true`
+
+##### <a name="-pgbackrest--repository--purge_config_dir"></a>`purge_config_dir`
+
+Data type: `Boolean`
+
+Whether files in `config_subdir` not managed by Puppet should be removed. Default: true
 
 Default value: `true`
 
