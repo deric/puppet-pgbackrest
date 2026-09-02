@@ -39,18 +39,18 @@ describe 'pgbackrest::repository' do
     it { is_expected.to contain_group('pgbackup') }
   end
 
-  it 'purges unmanaged configs from conf.d by default' do
-    is_expected.to contain_file('/etc/pgbackrest/conf.d').with(
+  it 'purges unmanaged configs from config_dir (and conf.d beneath it) by default' do
+    is_expected.to contain_file('/etc/pgbackrest').with(
       purge: true,
-      recurse: true,
+      recurse: false,
     )
   end
 
   context 'with purge_config_dir disabled' do
     let(:params) { { purge_config_dir: false } }
 
-    it 'does not purge conf.d' do
-      is_expected.to contain_file('/etc/pgbackrest/conf.d').with(
+    it 'does not purge config_dir' do
+      is_expected.to contain_file('/etc/pgbackrest').with(
         purge: false,
         recurse: false,
       )
@@ -113,9 +113,7 @@ describe 'pgbackrest::repository' do
       is_expected.to contain_file('/etc/pgbackrest/conf.d')
         .with(ensure: 'directory',
               owner: 'pgbackup',
-              group: 'pgbackup',
-              purge: true,
-              recurse: true)
+              group: 'pgbackup')
     }
 
     it { is_expected.to contain_class('pgbackrest::config') }
