@@ -13,6 +13,8 @@
 # @param config Configuration options keyed by ini section,
 #   e.g. `{ 'global' => { 'process-max' => 8 } }`
 # @param show_diff Whether changes to configuration values should be shown in reports/logs
+# @param purge_config_dir
+#   Whether files in `config_subdir` not managed by Puppet should be removed
 #
 class pgbackrest::config (
   Stdlib::AbsolutePath $config_dir = '/etc/pgbackrest',
@@ -22,6 +24,7 @@ class pgbackrest::config (
   String               $group = 'backup',
   Hash                 $config = {},
   Boolean              $show_diff = true,
+  Boolean              $purge_config_dir = true,
 ) {
   # Deprecated location
   file { '/etc/pgbackrest.conf':
@@ -47,6 +50,8 @@ class pgbackrest::config (
     ensure  => directory,
     owner   => $user,
     group   => $group,
+    purge   => $purge_config_dir,
+    recurse => $purge_config_dir,
     require => File[$config_dir],
   }
 
