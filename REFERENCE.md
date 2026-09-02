@@ -318,6 +318,7 @@ The following parameters are available in the `pgbackrest::repository` class:
 * [`manage_cron`](#-pgbackrest--repository--manage_cron)
 * [`manage_user`](#-pgbackrest--repository--manage_user)
 * [`manage_config`](#-pgbackrest--repository--manage_config)
+* [`purge_config_dir`](#-pgbackrest--repository--purge_config_dir)
 * [`password_encryption`](#-pgbackrest--repository--password_encryption)
 * [`user_home`](#-pgbackrest--repository--user_home)
 
@@ -588,6 +589,14 @@ Whether pgbackrest.conf should be managed
 
 Default value: `true`
 
+##### <a name="-pgbackrest--repository--purge_config_dir"></a>`purge_config_dir`
+
+Data type: `Boolean`
+
+Whether files in `config_subdir` not managed by Puppet should be removed. Default: true
+
+Default value: `true`
+
 ##### <a name="-pgbackrest--repository--password_encryption"></a>`password_encryption`
 
 Data type: `Postgresql::Pg_password_encryption`
@@ -668,6 +677,7 @@ The following parameters are available in the `pgbackrest::stanza` class:
 * [`manage_pgpass`](#-pgbackrest--stanza--manage_pgpass)
 * [`manage_hba`](#-pgbackrest--stanza--manage_hba)
 * [`manage_cron`](#-pgbackrest--stanza--manage_cron)
+* [`purge_config_dir`](#-pgbackrest--stanza--purge_config_dir)
 * [`manage_user`](#-pgbackrest--stanza--manage_user)
 * [`manage_user_home`](#-pgbackrest--stanza--manage_user_home)
 * [`manage_archive_cmd`](#-pgbackrest--stanza--manage_archive_cmd)
@@ -969,6 +979,15 @@ Whether backup cron jobs should be exported to the repository server
 
 Default value: `$pgbackrest::manage_cron`
 
+##### <a name="-pgbackrest--stanza--purge_config_dir"></a>`purge_config_dir`
+
+Data type: `Boolean`
+
+Whether files in `config_subdir` (`/etc/pgbackrest/conf.d`) not managed by
+Puppet should be removed. Default: true
+
+Default value: `true`
+
 ##### <a name="-pgbackrest--stanza--manage_user"></a>`manage_user`
 
 Data type: `Boolean`
@@ -1032,7 +1051,7 @@ Data type: `Pgbackrest::CompressType`
 
 File compression type, e.g. 'gz', 'lz4', 'zst' or 'bz2'
 
-Default value: `'gz'`
+Default value: `'zst'`
 
 ##### <a name="-pgbackrest--stanza--compress_level"></a>`compress_level`
 

@@ -27,6 +27,29 @@ describe 'pgbackrest::stanza' do
 
   it { is_expected.to contain_class('pgbackrest::install') }
 
+  it 'purges unmanaged configs from config_dir (and conf.d beneath it) by default' do
+    is_expected.to contain_file('/etc/pgbackrest').with(
+      purge: true,
+      recurse: false,
+    )
+  end
+
+  context 'with purge_config_dir disabled' do
+    let(:params) do
+      {
+        version: '14',
+        purge_config_dir: false,
+      }
+    end
+
+    it 'does not purge config_dir' do
+      is_expected.to contain_file('/etc/pgbackrest').with(
+        purge: false,
+        recurse: false,
+      )
+    end
+  end
+
   context 'with global options' do
     let(:params) do
       {

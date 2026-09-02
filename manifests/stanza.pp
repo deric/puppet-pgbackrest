@@ -77,6 +77,9 @@
 #   Whether `pg_hba.conf` rules exported by the repository server should be collected
 # @param manage_cron
 #   Whether backup cron jobs should be exported to the repository server
+# @param purge_config_dir
+#   Whether files in `config_subdir` (`/etc/pgbackrest/conf.d`) not managed by
+#   Puppet should be removed. Default: true
 # @param manage_user Whether unix user account should be managed
 # @param manage_user_home Whether user's home directory should be created by puppet
 # @param manage_archive_cmd Whether archive_command should be set on postgresql instance, changing archive_mode requires restart
@@ -129,6 +132,7 @@ class pgbackrest::stanza (
   Boolean                            $manage_pgpass        = $pgbackrest::manage_pgpass,
   Boolean                            $manage_hba           = $pgbackrest::manage_hba,
   Boolean                            $manage_cron          = $pgbackrest::manage_cron,
+  Boolean                            $purge_config_dir     = true,
   Boolean                            $manage_user          = $pgbackrest::manage_user,
   Boolean                            $manage_archive_cmd   = true,
   Boolean                            $manage_user_home     = true,
@@ -357,7 +361,8 @@ class pgbackrest::stanza (
   }
 
   class { 'pgbackrest::config':
-    config => $config,
+    config           => $config,
+    purge_config_dir => $purge_config_dir,
   }
 
   $db_conf = {
