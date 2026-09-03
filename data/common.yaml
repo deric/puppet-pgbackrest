@@ -3,3 +3,6 @@ lookup_options:
   pgbackrest::repository::config:
     merge:
       strategy: deep
+  pgbackrest::stanza::config:
+    merge:
+      strategy: deep
