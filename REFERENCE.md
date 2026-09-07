@@ -936,7 +936,7 @@ Data type: `Boolean`
 
 whether db role should be managed
 
-Default value: `false`
+Default value: `true`
 
 ##### <a name="-pgbackrest--stanza--manage_ssh_keys"></a>`manage_ssh_keys`
 
