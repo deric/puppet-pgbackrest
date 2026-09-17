@@ -133,7 +133,7 @@ Should be included on a database server. Exported statements are not executed on
 - **Install** `pgbackrest` package
 - **Generate** ssh keys (if given ssh key doesn't exist) and export public ssh key (only if `pgbackrest::manage_ssh_keys: true`), default: `false`
 - Export host ssh key (only if `pgbackrest::manage_host_keys: true`), default: `true`
-- **Create** a PostgreSQL user `pgbackrest::db_user` and database `pgbackrest::db_name` with randomly generated password, default user: `backup` (when `pgbackrest::stanza::manage_dbuser: true`)
+- **Create** a PostgreSQL role `pgbackrest::db_user` and database `pgbackrest::db_name` with randomly generated password (when `pgbackrest::stanza::manage_dbuser: true`, which is the default unless `pgbackrest::db_user` is the superuser `postgres`)
 - Export username and password for `.pgpass` file
 - **Grant** `pgbackrest::db_user` necessary permissions for executing `pg_basebackup` and allow connection from repository server (when `pgbackrest::manage_hba: true`)
 - Export `pgbackrest stanza-create` command
