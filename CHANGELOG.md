@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+**Bugfixes**
+
+- `manage_dbuser` no longer manages the PostgreSQL superuser: with the default `db_user` (`postgres`) the role was altered on every catalog run (`NOSUPERUSER`, `NOCREATEDB`, `NOCREATEROLE`) and its password overwritten. Managing `postgres` as a backup role is now refused, and `manage_dbuser` defaults to `true` only when a dedicated `db_user` is configured
+- The backup role's password is hashed with the configured `password_encryption`, so it matches the auth method used in the generated `pg_hba` rule
+
 ## Release 1.0.0 [2026-08-21]
 
 **Features**

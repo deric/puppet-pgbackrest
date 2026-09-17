@@ -65,7 +65,10 @@
 #   Redirect console output to a log file (make sense especially with custom backup command)
 # @param user Unix account owning local pgBackRest config files (backup user on the repository server)
 # @param group Primary unix group of `user`
-# @param manage_dbuser whether db role should be managed
+# @param manage_dbuser
+#   Whether the `db_user` role, the `db_name` database and the required grants should
+#   be managed. Defaults to `true` unless `db_user` is the PostgreSQL superuser
+#   (`postgres`), which must not be managed as a regular role.
 # @param manage_ssh_keys
 #   Whether an ssh key pair should be generated for `ssh_user` and its public key
 #   exported for the repository server
@@ -126,7 +129,7 @@ class pgbackrest::stanza (
   Optional[String]                   $seed                 = undef,
   String                             $user                 = $pgbackrest::backup_user,
   String                             $group                = $pgbackrest::backup_group,
-  Boolean                            $manage_dbuser        = true,
+  Boolean                            $manage_dbuser        = $db_user != 'postgres',
   Boolean                            $manage_ssh_keys      = $pgbackrest::manage_ssh_keys,
   Boolean                            $manage_host_keys     = $pgbackrest::manage_host_keys,
   Boolean                            $manage_pgpass        = $pgbackrest::manage_pgpass,
@@ -242,10 +245,18 @@ class pgbackrest::stanza (
   }
 
   if $manage_dbuser {
+    if $db_user == 'postgres' {
+      # The superuser already holds every privilege pgBackRest needs. Managing it as
+      # a regular role would strip attributes it is supposed to have (NOSUPERUSER,
+      # NOCREATEDB, NOCREATEROLE) and overwrite its password.
+      fail('pgbackrest::stanza: refusing to manage the PostgreSQL superuser as a backup role, set a dedicated `db_user` or `manage_dbuser => false`') # lint:ignore:140chars
+    }
+
     postgresql::server::role { $db_user:
       # db            => $db_name, # first we need to create a role, then database
       login         => true,
-      password_hash => postgresql::postgresql_password($db_user, $real_password),
+      # hash type must match the auth method used in the pg_hba rule below
+      password_hash => postgresql::postgresql_password($db_user, $real_password, false, $password_encryption),
       superuser     => false,
       replication   => true,
     }

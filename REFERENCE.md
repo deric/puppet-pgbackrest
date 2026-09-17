@@ -934,9 +934,11 @@ Default value: `$pgbackrest::backup_group`
 
 Data type: `Boolean`
 
-whether db role should be managed
+Whether the `db_user` role, the `db_name` database and the required grants should
+be managed. Defaults to `true` unless `db_user` is the PostgreSQL superuser
+(`postgres`), which must not be managed as a regular role.
 
-Default value: `true`
+Default value: `$db_user != 'postgres'`
 
 ##### <a name="-pgbackrest--stanza--manage_ssh_keys"></a>`manage_ssh_keys`
 

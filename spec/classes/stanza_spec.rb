@@ -86,6 +86,28 @@ describe 'pgbackrest::stanza' do
     }
   end
 
+  context 'with default db_user (postgres)' do
+    it 'does not manage the superuser role' do
+      is_expected.not_to contain_postgresql__server__role('postgres')
+    end
+
+    it { is_expected.not_to contain_class('pgbackrest::grants') }
+  end
+
+  context 'with manage_dbuser enabled for the superuser' do
+    let(:params) do
+      {
+        version: '14',
+        db_user: 'postgres',
+        manage_dbuser: true,
+      }
+    end
+
+    it {
+      is_expected.to compile.and_raise_error(%r{refusing to manage the PostgreSQL superuser})
+    }
+  end
+
   context 'backup db' do
     let(:params) do
       {
@@ -110,6 +132,10 @@ describe 'pgbackrest::stanza' do
         },
       )
     }
+
+    it 'hashes the password with the configured encryption' do
+      is_expected.to contain_postgresql__server__role('pgbackrest').with_password_hash(%r{^md5[0-9a-f]{32}$})
+    end
 
     it { is_expected.to contain_class('pgbackrest::grants') }
   end
